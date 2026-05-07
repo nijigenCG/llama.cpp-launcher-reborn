@@ -99,6 +99,11 @@ impl RpcManager {
             return;
         }
 
+        if settings.port == settings.rpc_port {
+            self.state = RpcState::Error(i18n::t(i18n::Key::ErrPortConflict, &i18n::Language::En).to_string());
+            return;
+        }
+
         self.state = RpcState::Starting;
         self._threads.clear();
 

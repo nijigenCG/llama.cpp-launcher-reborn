@@ -98,6 +98,11 @@ impl ServerManager {
             return;
         }
 
+        if settings.port == settings.rpc_port {
+            self.state = ServerState::Error(i18n::t(i18n::Key::ErrPortConflict, &i18n::Language::En).to_string());
+            return;
+        }
+
         self.state = ServerState::Starting;
         self.clear_logs();
         self.launch_command = None;

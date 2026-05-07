@@ -124,6 +124,7 @@ pub enum Key {
     ErrRpcPathMissing,
     ErrRpcFileNotFound,
     ErrStartFailed,
+    ErrPortConflict,
 
     // 关于
     AboutTitle,
@@ -365,8 +366,10 @@ impl Key {
             (Key::ErrRpcPathMissing, &Language::En) => "Please configure rpc-server path first",
             (Key::ErrRpcFileNotFound, &Language::Zh) => "rpc-server.exe 文件不存在",
             (Key::ErrRpcFileNotFound, &Language::En) => "rpc-server.exe file not found",
-            (Key::ErrStartFailed, &Language::Zh) => "启动失败",
-            (Key::ErrStartFailed, &Language::En) => "Start failed",
+          (Key::ErrStartFailed, &Language::Zh) => "启动失败",
+             (Key::ErrStartFailed, &Language::En) => "Start failed",
+             (Key::ErrPortConflict, &Language::Zh) => "Server 端口和 RPC 端口不能相同",
+             (Key::ErrPortConflict, &Language::En) => "Server port and RPC port cannot be the same",
 
             // 关于
             (Key::AboutTitle, &Language::Zh) => "关于",
