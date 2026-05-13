@@ -121,6 +121,11 @@ impl ServerManager {
             .arg("--top-k").arg(settings.top_k.to_string())
             .arg("--repeat-penalty").arg(settings.repeat_penalty.to_string());
 
+        // Flash Attention
+        if !settings.flash_attn.is_empty() {
+            cmd.arg("--flash-attn").arg(&settings.flash_attn);
+        }
+
         // 多模态投影
         if !settings.mmproj_path.as_os_str().is_empty() {
             cmd.arg("--mmproj").arg(&settings.mmproj_path);

@@ -12,23 +12,24 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 保存预设区域
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelPresetName, lang));
-        let mut name = String::new();
-        ui.text_edit_singleline(&mut name);
+        ui.text_edit_singleline(&mut settings.new_preset_name);
         if ui.button(i18n::t(i18n::Key::BtnSavePreset, lang)).clicked() {
-            if !name.trim().is_empty() {
-                let name = name.trim().to_string();
+            let trimmed = settings.new_preset_name.trim().to_string();
+            if !trimmed.is_empty() {
                 // 检查是否已存在同名预设
-                let exists = settings.presets.iter().any(|p| p.name == name);
+                let exists = settings.presets.iter().any(|p| p.name == trimmed);
                 if !exists {
-                    let preset = Preset::from_settings(settings, name);
+                    let preset = Preset::from_settings(settings, trimmed);
                     settings.presets.push(preset);
                 } else {
-                    // 覆盖现有预设 - 先找到索引
-                    if let Some(idx) = settings.presets.iter().position(|p| p.name == name) {
-                        let new_preset = Preset::from_settings(settings, name);
+                    // 覆盖现有预设
+                    if let Some(idx) = settings.presets.iter().position(|p| p.name == trimmed) {
+                        let new_preset = Preset::from_settings(settings, trimmed);
                         settings.presets[idx] = new_preset;
                     }
                 }
+                // 保存后清空输入框
+                settings.new_preset_name.clear();
             }
         }
     });
@@ -45,7 +46,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         egui::ScrollArea::vertical().show(ui, |ui| {
             // 先收集需要操作的信息，避免借用冲突
             let mut load_index: Option<usize> = None;
-            let mut rename_index: Option<usize> = None;
             let mut delete_index: Option<usize> = None;
 
             for (i, preset) in settings.presets.iter().enumerate() {
@@ -55,9 +55,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                         load_index = Some(i);
                     }
 
-                    // 重命名按钮
+                    // 重命名按钮 - 使用 settings 持久化状态
                     if ui.small_button(i18n::t(i18n::Key::BtnRenamePreset, lang)).clicked() {
-                        rename_index = Some(i);
+                        settings.rename_preset_index = Some(i);
+                        settings.rename_preset_new_name = preset.name.clone();
                     }
 
                     // 删除按钮
@@ -68,7 +69,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 ui.separator();
             }
 
-            // 执行操作
+            // 执行加载
             if let Some(idx) = load_index {
                 if idx < settings.presets.len() {
                     let preset = settings.presets[idx].clone();
@@ -76,28 +77,45 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
             }
 
-            if let Some(idx) = rename_index {
+            // 执行删除
+            if let Some(idx) = delete_index {
                 if idx < settings.presets.len() {
-                    let mut new_name = settings.presets[idx].name.clone();
-                    egui::Window::new("重命名预设")
+                    settings.presets.remove(idx);
+                    // 如果删除的是正在重命名的预设，清空重命名状态
+                    if let Some(rename_idx) = settings.rename_preset_index {
+                        if rename_idx >= settings.presets.len() {
+                            settings.rename_preset_index = None;
+                            settings.rename_preset_new_name.clear();
+                        }
+                    }
+                }
+            }
+
+            // 重命名弹窗 - 使用 settings 持久化输入框状态
+            if let Some(idx) = settings.rename_preset_index {
+                if idx < settings.presets.len() {
+                    egui::Window::new(i18n::t(i18n::Key::BtnRenamePreset, lang))
                         .collapsible(false)
                         .resizable(false)
                         .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                         .show(ui.ctx(), |ui| {
                             ui.label(i18n::t(i18n::Key::LabelPresetName, lang));
-                            ui.text_edit_singleline(&mut new_name);
-                            if ui.button("确认").clicked() {
-                                if !new_name.trim().is_empty() {
-                                    settings.presets[idx].name = new_name.trim().to_string();
+                            ui.text_edit_singleline(&mut settings.rename_preset_new_name);
+                            ui.horizontal(|ui| {
+                                if ui.button("确认").clicked() {
+                                    let trimmed = settings.rename_preset_new_name.trim().to_string();
+                                    if !trimmed.is_empty() {
+                                        settings.presets[idx].name = trimmed;
+                                    }
+                                    settings.rename_preset_index = None;
+                                    settings.rename_preset_new_name.clear();
                                 }
-                            }
+                                if ui.button("取消").clicked() {
+                                    settings.rename_preset_index = None;
+                                    settings.rename_preset_new_name.clear();
+                                }
+                            });
                         });
-                }
-            }
-
-            if let Some(idx) = delete_index {
-                if idx < settings.presets.len() {
-                    settings.presets.remove(idx);
                 }
             }
         });

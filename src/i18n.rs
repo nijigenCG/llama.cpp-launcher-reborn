@@ -99,6 +99,7 @@ pub enum Key {
     LabelTopP,
     LabelTopK,
     LabelRepeatPenalty,
+    LabelFlashAttn,
     SectionKvCache,
     CheckboxKvOffload,
     HintKvOffload,
@@ -312,6 +313,8 @@ impl Key {
             (Key::LabelTopK, &Language::En) => "Top K:",
             (Key::LabelRepeatPenalty, &Language::Zh) => "重复惩罚:",
             (Key::LabelRepeatPenalty, &Language::En) => "Repeat Penalty:",
+            (Key::LabelFlashAttn, &Language::Zh) => "Flash Attention:",
+            (Key::LabelFlashAttn, &Language::En) => "Flash Attention:",
             (Key::SectionKvCache, &Language::Zh) => "KV 缓存配置",
             (Key::SectionKvCache, &Language::En) => "KV Cache Config",
             (Key::CheckboxKvOffload, &Language::Zh) => "K/V 缓存卸载到 GPU",
@@ -388,8 +391,8 @@ impl Key {
              (Key::LabelPresetName, &Language::En) => "Preset Name:",
        (Key::HintNoPresets, &Language::Zh) => "暂无预设",
         (Key::HintNoPresets, &Language::En) => "No presets yet",
-             (Key::HintPresetHelp, &Language::Zh) => "预设仅保存启动参数，不包含文件路径",
-             (Key::HintPresetHelp, &Language::En) => "Presets save launch parameters only, not file paths",
+            (Key::HintPresetHelp, &Language::Zh) => "预设保存所有配置参数及文件路径",
+             (Key::HintPresetHelp, &Language::En) => "Presets save all configuration parameters and file paths",
 
              // 错误信息
             (Key::ErrServerModelMissing, &Language::Zh) => "请先配置 Server 路径和模型路径",

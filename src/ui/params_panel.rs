@@ -53,6 +53,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ui.label(format!("{:.2}", settings.repeat_penalty));
     });
 
+    // Flash Attention
+    ui.horizontal(|ui| {
+        ui.label(i18n::t(i18n::Key::LabelFlashAttn, lang));
+        let fa_modes = ["on", "off", "auto"];
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 8.0;
+            for mode in &fa_modes {
+                let selected = settings.flash_attn == *mode;
+                if ui.selectable_label(selected, *mode).clicked() {
+                    settings.flash_attn = mode.to_string();
+                }
+            }
+        });
+    });
+
     ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionKvCache, lang));
     ui.separator();

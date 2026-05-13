@@ -5,6 +5,10 @@ use std::path::{Path, PathBuf};
 const CONFIG_DIR: &str = "llama_lunch";
 const CONFIG_FILE: &str = "settings.json";
 
+fn default_flash_attn() -> String {
+    "auto".to_string()
+}
+
 /// 启动参数预设
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Preset {
@@ -20,6 +24,8 @@ pub struct Preset {
     pub top_p: f32,
     pub top_k: i32,
     pub repeat_penalty: f32,
+    #[serde(default = "default_flash_attn")]
+    pub flash_attn: String,
     // KV 缓存配置
     pub kv_offload: bool,
     pub cache_type_k: String,
@@ -51,6 +57,7 @@ impl Default for Preset {
             top_p: 0.95,
             top_k: 40,
             repeat_penalty: 1.1,
+            flash_attn: default_flash_attn(),
             kv_offload: true,
             cache_type_k: "f16".to_string(),
             cache_type_v: "f16".to_string(),
@@ -81,6 +88,7 @@ impl Preset {
             top_p: settings.top_p,
             top_k: settings.top_k,
             repeat_penalty: settings.repeat_penalty,
+            flash_attn: settings.flash_attn.clone(),
             kv_offload: settings.kv_offload,
             cache_type_k: settings.cache_type_k.clone(),
             cache_type_v: settings.cache_type_v.clone(),
@@ -107,6 +115,7 @@ impl Preset {
         settings.top_p = self.top_p;
         settings.top_k = self.top_k;
         settings.repeat_penalty = self.repeat_penalty;
+        settings.flash_attn = self.flash_attn;
         settings.kv_offload = self.kv_offload;
         settings.cache_type_k = self.cache_type_k;
         settings.cache_type_v = self.cache_type_v;
@@ -145,6 +154,8 @@ pub struct AppSettings {
     pub top_p: f32,
     pub top_k: i32,
     pub repeat_penalty: f32,
+    #[serde(default = "default_flash_attn")]
+    pub flash_attn: String,
 
     // KV 缓存配置
     pub kv_offload: bool,
@@ -179,6 +190,14 @@ pub struct AppSettings {
     // 预设
     #[serde(default)]
     pub presets: Vec<Preset>,
+
+    // 预设 UI 状态（不序列化）
+    #[serde(skip, default)]
+    pub new_preset_name: String,
+    #[serde(skip, default)]
+    pub rename_preset_index: Option<usize>,
+    #[serde(skip, default)]
+    pub rename_preset_new_name: String,
 }
 
 impl Default for AppSettings {
@@ -198,6 +217,7 @@ impl Default for AppSettings {
             top_p: 0.95,
             top_k: 40,
             repeat_penalty: 1.1,
+            flash_attn: default_flash_attn(),
             kv_offload: true,
             cache_type_k: "f16".to_string(),
             cache_type_v: "f16".to_string(),
@@ -217,6 +237,9 @@ impl Default for AppSettings {
             rpc_mode: false,
             rpc_endpoints: "127.0.0.1:50052".to_string(),
             presets: Vec::new(),
+            new_preset_name: String::new(),
+            rename_preset_index: None,
+            rename_preset_new_name: String::new(),
         }
     }
 }
