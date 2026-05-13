@@ -193,7 +193,7 @@ impl eframe::App for LlamaLunchApp {
                     tab if tab == i18n::t(i18n::Key::TabRpc, &self.lang) => rpc_panel::ui(ui, &mut self.settings, &self.settings_manager, &self.lang),
                     tab if tab == i18n::t(i18n::Key::TabModel, &self.lang) => model_panel::ui(ui, &mut self.settings, &self.lang),
                   tab if tab == i18n::t(i18n::Key::TabParams, &self.lang) => params_panel::ui(ui, &mut self.settings, &self.lang),
-                      tab if tab == i18n::t(i18n::Key::TabLog, &self.lang) => log_panel::ui(ui, &mut self.server_manager, &self.lang),
+                       tab if tab == i18n::t(i18n::Key::TabLog, &self.lang) => log_panel::ui(ui, &mut self.settings, &mut self.server_manager, &self.lang),
                       tab if tab == i18n::t(i18n::Key::TabCommands, &self.lang) => launch_commands_panel::ui(ui, &self.server_manager, &self.rpc_manager, &self.lang),
                       tab if tab == i18n::t(i18n::Key::TabPresets, &self.lang) => presets_panel::ui(ui, &mut self.settings, &self.lang),
 

@@ -121,6 +121,7 @@ pub enum Key {
     PanelLogTitle,
     HintLogSession,
     HintNoLogs,
+    CheckboxAutoScroll,
     SectionLaunchCommands,
     LabelServerCommand,
     LabelRpcCommand,
@@ -373,6 +374,8 @@ impl Key {
             (Key::HintLogSession, &Language::En) => "Logs are only kept for the current session",
             (Key::HintNoLogs, &Language::Zh) => "暂无日志输出",
             (Key::HintNoLogs, &Language::En) => "No log output",
+            (Key::CheckboxAutoScroll, &Language::Zh) => "自动滚动到最新日志",
+            (Key::CheckboxAutoScroll, &Language::En) => "Auto-scroll to latest logs",
 
             // 启动命令
             (Key::SectionLaunchCommands, &Language::Zh) => "启动命令",

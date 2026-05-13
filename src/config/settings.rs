@@ -9,6 +9,10 @@ fn default_flash_attn() -> String {
     "auto".to_string()
 }
 
+fn default_auto_scroll_logs() -> bool {
+    true
+}
+
 /// 启动参数预设
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Preset {
@@ -198,6 +202,10 @@ pub struct AppSettings {
     pub rename_preset_index: Option<usize>,
     #[serde(skip, default)]
     pub rename_preset_new_name: String,
+
+    // 日志面板设置
+    #[serde(default = "default_auto_scroll_logs")]
+    pub auto_scroll_logs: bool,
 }
 
 impl Default for AppSettings {
@@ -240,6 +248,7 @@ impl Default for AppSettings {
             new_preset_name: String::new(),
             rename_preset_index: None,
             rename_preset_new_name: String::new(),
+            auto_scroll_logs: default_auto_scroll_logs(),
         }
     }
 }

@@ -1,7 +1,8 @@
+use crate::config::settings::AppSettings;
 use crate::engine::server::{LogLevel, ServerManager};
 use crate::i18n;
 
-pub fn ui(ui: &mut egui::Ui, server: &mut ServerManager, lang: &i18n::Language) {
+pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerManager, lang: &i18n::Language) {
     ui.heading(i18n::t(i18n::Key::PanelLogTitle, lang));
     ui.separator();
 
@@ -9,47 +10,54 @@ pub fn ui(ui: &mut egui::Ui, server: &mut ServerManager, lang: &i18n::Language) 
         if ui.small_button(i18n::t(i18n::Key::BtnClearLogs, lang)).clicked() {
             server.clear_logs();
         }
+        ui.checkbox(&mut settings.auto_scroll_logs, i18n::t(i18n::Key::CheckboxAutoScroll, lang));
         ui.small(i18n::t(i18n::Key::HintLogSession, lang));
     });
 
     ui.add_space(8.0);
 
-    egui::ScrollArea::vertical().auto_shrink(false).show(ui, |ui| {
-        let logs = server.logs();
-        if logs.is_empty() {
-            ui.add_space(20.0);
-            ui.horizontal_centered(|ui| {
-                ui.colored_label(egui::Color32::GRAY, i18n::t(i18n::Key::HintNoLogs, lang));
-            });
-        } else {
-            for entry in &logs {
-                let prefix = match entry.level {
-                    LogLevel::Info => "",
-                    LogLevel::Warn => "⚠ ",
-                    LogLevel::Error => "✖ ",
-                };
-
-                let text = format!("{}{}", prefix, entry.text);
-
-                ui.horizontal_wrapped(|ui| {
-                    match entry.level {
-                        LogLevel::Info => {
-                            ui.colored_label(egui::Color32::BLACK, &text);
-                        }
-                        LogLevel::Warn => {
-                            egui::Frame::default()
-                                .fill(egui::Color32::from_rgb(80, 80, 80))
-                                .inner_margin(egui::Margin::same(4.0))
-                                .show(ui, |ui| {
-                                    ui.colored_label(egui::Color32::YELLOW, &text);
-                                });
-                        }
-                        LogLevel::Error => {
-                            ui.colored_label(egui::Color32::RED, &text);
-                        }
-                    }
+    egui::ScrollArea::vertical()
+        .auto_shrink(false)
+        .id_salt("log_scroll_area")
+        .stick_to_bottom(settings.auto_scroll_logs)  // 根据复选框控制自动滚动
+        .show(ui, |ui| {
+            let logs = server.logs();
+            if logs.is_empty() {
+                ui.add_space(20.0);
+                ui.horizontal_centered(|ui| {
+                    ui.colored_label(egui::Color32::GRAY, i18n::t(i18n::Key::HintNoLogs, lang));
                 });
+            } else {
+                for entry in &logs {
+                    let prefix = match entry.level {
+                        LogLevel::Info => "",
+                        LogLevel::Warn => "⚠ ",
+                        LogLevel::Error => "✖ ",
+                    };
+
+                    let text = format!("{}{}", prefix, entry.text);
+
+                    ui.horizontal_wrapped(|ui| {
+                        match entry.level {
+                            LogLevel::Info => {
+                                ui.colored_label(egui::Color32::BLACK, &text);
+                            }
+                            LogLevel::Warn => {
+                                egui::Frame::default()
+                                    .fill(egui::Color32::from_rgb(80, 80, 80))
+                                    .inner_margin(egui::Margin::same(4.0))
+                                    .show(ui, |ui| {
+                                        ui.colored_label(egui::Color32::YELLOW, &text);
+                                    });
+                            }
+                            LogLevel::Error => {
+                                ui.colored_label(egui::Color32::RED, &text);
+                            }
+                        }
+                    });
+                }
             }
-        }
-    });
+        });
+    
+
 }
