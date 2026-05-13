@@ -11,6 +11,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
             server.clear_logs();
         }
         ui.checkbox(&mut settings.auto_scroll_logs, i18n::t(i18n::Key::CheckboxAutoScroll, lang));
+        ui.add_space(8.0);
+        ui.label(i18n::t(i18n::Key::LabelMaxLogLines, lang));
+        ui.add(egui::DragValue::new(&mut settings.max_log_lines).range(-1..=10000));
         ui.small(i18n::t(i18n::Key::HintLogSession, lang));
     });
 
@@ -21,7 +24,13 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
         .id_salt("log_scroll_area")
         .stick_to_bottom(settings.auto_scroll_logs)  // 根据复选框控制自动滚动
         .show(ui, |ui| {
-            let logs = server.logs();
+            let mut logs = server.logs();
+            // 根据设置截断日志行数 (-1 表示全部保留)
+            if settings.max_log_lines > 0 && logs.len() > settings.max_log_lines as usize {
+                let start_index = logs.len() - settings.max_log_lines as usize;
+                logs.drain(..start_index);
+            }
+            
             if logs.is_empty() {
                 ui.add_space(20.0);
                 ui.horizontal_centered(|ui| {
@@ -59,5 +68,4 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
             }
         });
     
-
 }

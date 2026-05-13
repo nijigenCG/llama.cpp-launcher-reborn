@@ -122,6 +122,7 @@ pub enum Key {
     HintLogSession,
     HintNoLogs,
     CheckboxAutoScroll,
+    LabelMaxLogLines,
     SectionLaunchCommands,
     LabelServerCommand,
     LabelRpcCommand,
@@ -376,6 +377,8 @@ impl Key {
             (Key::HintNoLogs, &Language::En) => "No log output",
             (Key::CheckboxAutoScroll, &Language::Zh) => "自动滚动到最新日志",
             (Key::CheckboxAutoScroll, &Language::En) => "Auto-scroll to latest logs",
+            (Key::LabelMaxLogLines, &Language::Zh) => "最大显示行数:",
+            (Key::LabelMaxLogLines, &Language::En) => "Max log lines:",
 
             // 启动命令
             (Key::SectionLaunchCommands, &Language::Zh) => "启动命令",

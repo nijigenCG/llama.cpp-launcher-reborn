@@ -13,7 +13,11 @@ fn default_auto_scroll_logs() -> bool {
     true
 }
 
-/// 启动参数预设
+fn default_max_log_lines() -> i32 {
+    100
+}
+
+// Duplicate definition removed - keeping only one instance above
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Preset {
     pub name: String,
@@ -206,6 +210,8 @@ pub struct AppSettings {
     // 日志面板设置
     #[serde(default = "default_auto_scroll_logs")]
     pub auto_scroll_logs: bool,
+    #[serde(default = "default_max_log_lines")]
+    pub max_log_lines: i32,
 }
 
 impl Default for AppSettings {
@@ -249,6 +255,7 @@ impl Default for AppSettings {
             rename_preset_index: None,
             rename_preset_new_name: String::new(),
             auto_scroll_logs: default_auto_scroll_logs(),
+            max_log_lines: default_max_log_lines(),
         }
     }
 }
