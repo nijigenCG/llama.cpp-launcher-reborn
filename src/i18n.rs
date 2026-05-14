@@ -39,7 +39,6 @@ pub enum Key {
     BtnClose,
     // 预设
     BtnSavePreset,
-    BtnLoadPreset,
     BtnDeletePreset,
     BtnRenamePreset,
     BtnApplyPreset,
@@ -92,7 +91,6 @@ pub enum Key {
     NoGgufFiles,
     NoMmprojFiles,
     NoDflashFiles,
-    HintAutoDetectModelDir,
 
     // 参数面板
     PanelParamsTitle,
@@ -210,8 +208,7 @@ impl Key {
              (Key::BtnClose, &Language::En) => "Close",
              (Key::BtnSavePreset, &Language::Zh) => "保存预设",
              (Key::BtnSavePreset, &Language::En) => "Save Preset",
-             (Key::BtnLoadPreset, &Language::Zh) => "加载",
-             (Key::BtnLoadPreset, &Language::En) => "Load",
+
              (Key::BtnDeletePreset, &Language::Zh) => "删除",
              (Key::BtnDeletePreset, &Language::En) => "Delete",
              (Key::BtnRenamePreset, &Language::Zh) => "重命名",
@@ -304,8 +301,7 @@ impl Key {
             (Key::SectionDflash, &Language::En) => "DFlash Draft Files",
             (Key::NoDflashFiles, &Language::Zh) => "没有检测到 DFlash 文件",
             (Key::NoDflashFiles, &Language::En) => "No DFlash files detected",
-            (Key::HintAutoDetectModelDir, &Language::Zh) => "未找到 model 或 models 文件夹",
-            (Key::HintAutoDetectModelDir, &Language::En) => "No model or models folder found",
+
 
             // 参数面板
             (Key::PanelParamsTitle, &Language::Zh) => "推理参数",
