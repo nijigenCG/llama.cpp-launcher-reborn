@@ -41,6 +41,8 @@ pub enum Key {
     BtnLoadPreset,
     BtnDeletePreset,
     BtnRenamePreset,
+    BtnApplyPreset,
+    CheckboxAutoStartPreset,
 
     // 状态
     StatusProcessing,
@@ -405,6 +407,10 @@ impl Key {
         (Key::HintNoPresets, &Language::En) => "No presets yet",
             (Key::HintPresetHelp, &Language::Zh) => "预设保存所有配置参数及文件路径",
              (Key::HintPresetHelp, &Language::En) => "Presets save all configuration parameters and file paths",
+             (Key::BtnApplyPreset, &Language::Zh) => "应用",
+             (Key::BtnApplyPreset, &Language::En) => "Apply",
+             (Key::CheckboxAutoStartPreset, &Language::Zh) => "自启动预设",
+             (Key::CheckboxAutoStartPreset, &Language::En) => "Auto-start preset",
 
              // 错误信息
             (Key::ErrServerModelMissing, &Language::Zh) => "请先配置 Server 路径和模型路径",

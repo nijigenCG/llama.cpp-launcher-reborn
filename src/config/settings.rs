@@ -206,6 +206,10 @@ pub struct AppSettings {
     #[serde(skip, default)]
     pub rename_preset_new_name: String,
 
+    // 自启动预设名称
+    #[serde(default)]
+    pub auto_start_preset_name: Option<String>,
+
     // 日志面板设置
     #[serde(default = "default_auto_scroll_logs")]
     pub auto_scroll_logs: bool,
@@ -260,6 +264,7 @@ impl Default for AppSettings {
             auto_scroll_logs: default_auto_scroll_logs(),
             max_log_lines: default_max_log_lines(),
             auto_start: false,
+            auto_start_preset_name: None,
         }
     }
 }
