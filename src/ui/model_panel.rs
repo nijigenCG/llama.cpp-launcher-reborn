@@ -1,6 +1,43 @@
 use crate::config::settings::AppSettings;
 use crate::i18n;
 
+/// 自动检测模型文件夹
+/// 检查应用所在目录中是否有 model 或 models 文件夹（不区分大小写）
+fn auto_detect_model_dir() -> Option<std::path::PathBuf> {
+    let exe_dir = std::env::current_exe().ok()?.parent()?.to_path_buf();
+    
+    let dirs: Vec<_> = match std::fs::read_dir(&exe_dir) {
+        Ok(entries) => entries
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_dir())
+            .collect(),
+        Err(_) => return None,
+    };
+
+    // 优先匹配 "models"，其次 "model"
+    let models_dir = dirs.iter().find(|e| {
+        e.file_name()
+            .to_string_lossy()
+            .to_lowercase()
+            .eq_ignore_ascii_case("models")
+    });
+    if let Some(dir) = models_dir {
+        return Some(dir.path());
+    }
+
+    let model_dir = dirs.iter().find(|e| {
+        e.file_name()
+            .to_string_lossy()
+            .to_lowercase()
+            .eq_ignore_ascii_case("model")
+    });
+    if let Some(dir) = model_dir {
+        return Some(dir.path());
+    }
+
+    None
+}
+
 /// 文件名解析为彩色标签
 fn parse_tags(filename: &str) -> Vec<(String, egui::Color32)> {
     let stem = filename
@@ -149,6 +186,11 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 .set_title(i18n::t(i18n::Key::DialogSelectFolder, lang))
                 .pick_folder()
             {
+                settings.model_dir = path;
+            }
+        }
+        if ui.button(i18n::t(i18n::Key::BtnAutoDetect, lang)).clicked() {
+            if let Some(path) = auto_detect_model_dir() {
                 settings.model_dir = path;
             }
         }

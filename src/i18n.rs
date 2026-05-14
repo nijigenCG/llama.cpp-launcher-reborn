@@ -89,6 +89,7 @@ pub enum Key {
     NoGgufFiles,
     NoMmprojFiles,
     NoDflashFiles,
+    HintAutoDetectModelDir,
 
     // 参数面板
     PanelParamsTitle,
@@ -298,6 +299,8 @@ impl Key {
             (Key::SectionDflash, &Language::En) => "DFlash Draft Files",
             (Key::NoDflashFiles, &Language::Zh) => "没有检测到 DFlash 文件",
             (Key::NoDflashFiles, &Language::En) => "No DFlash files detected",
+            (Key::HintAutoDetectModelDir, &Language::Zh) => "未找到 model 或 models 文件夹",
+            (Key::HintAutoDetectModelDir, &Language::En) => "No model or models folder found",
 
             // 参数面板
             (Key::PanelParamsTitle, &Language::Zh) => "推理参数",
