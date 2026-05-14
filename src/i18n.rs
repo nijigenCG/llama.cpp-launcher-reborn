@@ -17,6 +17,7 @@ pub enum Key {
     MenuItemLoadConfig,
     MenuItemAutoStart,
     MenuItemAbout,
+    MenuItemCreateShortcut,
 
     // 标签页
     TabServer,
@@ -170,6 +171,8 @@ impl Key {
             (Key::MenuItemAutoStart, &Language::En) => "Auto Start",
             (Key::MenuItemAbout, &Language::Zh) => "关于",
             (Key::MenuItemAbout, &Language::En) => "About",
+            (Key::MenuItemCreateShortcut, &Language::Zh) => "创建桌面快捷方式",
+            (Key::MenuItemCreateShortcut, &Language::En) => "Create Desktop Shortcut",
 
             // 标签页
             (Key::TabServer, &Language::Zh) => "Server",

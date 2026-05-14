@@ -5,6 +5,7 @@ mod config;
 mod engine;
 mod i18n;
 mod ui;
+mod shortcut;
 
 use app::LlamaLunchApp;
 use egui::{FontData, FontDefinitions, FontFamily};
