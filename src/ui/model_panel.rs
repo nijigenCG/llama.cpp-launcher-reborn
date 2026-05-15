@@ -192,6 +192,8 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         if ui.button(i18n::t(i18n::Key::BtnAutoDetect, lang)).clicked() {
             if let Some(path) = auto_detect_model_dir() {
                 settings.model_dir = path;
+            } else {
+                settings.model_dir = std::path::PathBuf::from("");
             }
         }
     });

@@ -299,15 +299,14 @@ impl SettingsManager {
         Ok(())
     }
 
-    /// 在可执行文件所在目录查找指定名称的可执行文件
-    pub fn locate_exe(&self, name: &str) -> Option<PathBuf> {
-        let exe_dir = self.config_dir.parent()?;
+    /// 在指定目录中查找指定名称的可执行文件
+    fn find_exe_in_dir(dir: &Path, name: &str) -> Option<PathBuf> {
         let filename = if cfg!(target_os = "windows") {
             format!("{}.exe", name)
         } else {
             name.to_string()
         };
-        let path = exe_dir.join(&filename);
+        let path = dir.join(&filename);
         if path.exists() {
             Some(path)
         } else {
@@ -315,13 +314,47 @@ impl SettingsManager {
         }
     }
 
+    /// 在指定目录及其匹配关键词的子目录中查找可执行文件
+    /// 优先级：1. 目录本身  2. 名称包含 keyword 的子目录（按目录名排序，保证确定性）
+    fn find_exe_recursive(&self, dir: &Path, exe_name: &str, keyword: &str) -> Option<PathBuf> {
+        // 1. 先在目录本身查找
+        if let Some(path) = Self::find_exe_in_dir(dir, exe_name) {
+            return Some(path);
+        }
+
+        // 2. 在名称包含 keyword 的子目录中查找
+        let entries = fs::read_dir(dir).ok()?;
+        let mut subdirs: Vec<_> = entries
+            .filter_map(|e| e.ok())
+            .filter(|e| e.path().is_dir())
+            .filter(|e| {
+                e.file_name()
+                    .to_string_lossy()
+                    .to_lowercase()
+                    .contains(&keyword.to_lowercase())
+            })
+            .map(|e| e.path())
+            .collect();
+        subdirs.sort();
+
+        for subdir in subdirs {
+            if let Some(path) = Self::find_exe_in_dir(&subdir, exe_name) {
+                return Some(path);
+            }
+        }
+
+        None
+    }
+
     /// 自动检测 llama-server 路径
+    /// 搜索：exe 同级目录 → 含 "llama" 名称的子目录
     pub fn auto_detect_server_path(&self) -> Option<PathBuf> {
-        self.locate_exe("llama-server")
+        self.find_exe_recursive(&self.config_dir, "llama-server", "llama")
     }
 
     /// 自动检测 rpc-server 路径
+    /// 搜索：exe 同级目录 → 含 "llama" 名称的子目录（通常与 llama-server 同目录）
     pub fn auto_detect_rpc_path(&self) -> Option<PathBuf> {
-        self.locate_exe("rpc-server")
+        self.find_exe_recursive(&self.config_dir, "rpc-server", "llama")
     }
 }
