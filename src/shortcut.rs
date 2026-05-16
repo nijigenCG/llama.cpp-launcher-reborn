@@ -10,7 +10,7 @@ pub fn create_desktop_shortcut() -> Result<(), String> {
     let desktop_dir = dirs::desktop_dir().ok_or_else(|| "无法获取桌面路径".to_string())?;
     
     // 3. 构造快捷方式目标路径
-    let shortcut_path: PathBuf = desktop_dir.join("LLama Lunch.lnk");
+    let shortcut_path: PathBuf = desktop_dir.join("llama.cpp lunch.lnk");
     
     // 4. 创建 ShellLink 快捷方式（自动设置工作目录为 exe 所在目录）
     let link = shortcuts_rs::ShellLink::new(&exe_path, None, None, None)
