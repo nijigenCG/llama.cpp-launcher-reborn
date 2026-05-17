@@ -1,4 +1,4 @@
-use crate::config::settings::AppSettings;
+use crate::config::settings::{AppSettings, GpuLayersMode};
 use crate::i18n;
 
 pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) {
@@ -74,7 +74,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // K 缓存类型
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelCacheTypeK, lang));
-        let k_types = ["f16", "q8_0", "q4_0"];
+        let k_types = ["f32", "f16", "bf16", "q8_0", "q4_0", "q4_1", "iq4_nl", "q5_0", "q5_1"];
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 8.0;
             for k_type in &k_types {
@@ -89,7 +89,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // V 缓存类型
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelCacheTypeV, lang));
-        let v_types = ["f16", "q8_0", "q4_0"];
+        let v_types = ["f32", "f16", "bf16", "q8_0", "q4_0", "q4_1", "iq4_nl", "q5_0", "q5_1"];
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 8.0;
             for v_type in &v_types {
@@ -108,9 +108,26 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // GPU 层数
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelGpuDevice, lang));
-        ui.text_edit_singleline(&mut settings.gpu_layers_str);
-        ui.small(i18n::t(i18n::Key::HintGpuLayers, lang));
+    
+        if ui.radio_value(&mut settings.gpu_layers_mode, GpuLayersMode::Auto, i18n::t(i18n::Key::GpuLayersAuto, lang)).clicked() {
+            //
+        }
+        if ui.radio_value(&mut settings.gpu_layers_mode, GpuLayersMode::All, i18n::t(i18n::Key::GpuLayersAll, lang)).clicked() {
+            //
+        }
     });
+
+    // GPU 层数手动输入
+    if let GpuLayersMode::Manual(ref mut n) = settings.gpu_layers_mode {
+        ui.horizontal(|ui| {
+            ui.indent("gpu_layers_manual", |ui| {
+                ui.label(i18n::t(i18n::Key::GpuLayersManual, lang));
+                ui.add(egui::DragValue::new(n).range(0..=256));
+            });
+        });
+    }
+
+    ui.small(i18n::t(i18n::Key::HintGpuLayers, lang));
 
     // 设备列表
     ui.horizontal(|ui| {
@@ -145,6 +162,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // CPU MoE
     ui.horizontal(|ui| {
         ui.checkbox(&mut settings.cpu_moe, i18n::t(i18n::Key::CheckboxCpuMoe, lang));
+        ui.small(i18n::t(i18n::Key::HintCpuMoe, lang));
     });
 
     // N CPU MoE
