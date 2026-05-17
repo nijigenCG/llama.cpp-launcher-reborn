@@ -251,7 +251,7 @@ impl Default for AppSettings {
             rpc_server_path: PathBuf::new(),
             rpc_host: "127.0.0.1".to_string(),
             rpc_port: 50052,
-            rpc_threads: 12,
+            rpc_threads: 8,
             rpc_device: "".to_string(),
             rpc_cache: false,
             verbose: false,
