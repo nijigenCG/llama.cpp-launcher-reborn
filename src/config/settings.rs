@@ -106,6 +106,7 @@ pub struct Preset {
     pub top_p: f32,
     pub top_k: i32,
     pub repeat_penalty: f32,
+    pub presence_penalty: f32,
     #[serde(default = "default_flash_attn")]
     pub flash_attn: String,
     // KV 缓存配置
@@ -138,6 +139,7 @@ impl Default for Preset {
             top_p: 0.95,
             top_k: 40,
             repeat_penalty: 1.1,
+            presence_penalty: 0.0,
             flash_attn: default_flash_attn(),
             kv_offload: true,
             cache_type_k: "f16".to_string(),
@@ -168,6 +170,7 @@ impl Preset {
             top_p: settings.top_p,
             top_k: settings.top_k,
             repeat_penalty: settings.repeat_penalty,
+            presence_penalty: settings.presence_penalty,
             flash_attn: settings.flash_attn.clone(),
             kv_offload: settings.kv_offload,
             cache_type_k: settings.cache_type_k.clone(),
@@ -194,6 +197,7 @@ impl Preset {
         settings.top_p = self.top_p;
         settings.top_k = self.top_k;
         settings.repeat_penalty = self.repeat_penalty;
+        settings.presence_penalty = self.presence_penalty;
         settings.flash_attn = self.flash_attn;
         settings.kv_offload = self.kv_offload;
         settings.cache_type_k = self.cache_type_k;
@@ -231,10 +235,10 @@ pub struct AppSettings {
     pub temperature: f32,
     pub top_p: f32,
     pub top_k: i32,
-    pub repeat_penalty: f32,
+   pub repeat_penalty: f32,
+    pub presence_penalty: f32,
     #[serde(default = "default_flash_attn")]
     pub flash_attn: String,
-
     // KV 缓存配置
     pub kv_offload: bool,
     pub cache_type_k: String,
@@ -308,6 +312,7 @@ impl Default for AppSettings {
             top_p: 0.95,
             top_k: 40,
             repeat_penalty: 1.1,
+            presence_penalty: 0.0,
             flash_attn: default_flash_attn(),
             kv_offload: true,
             cache_type_k: "f16".to_string(),

@@ -154,7 +154,8 @@ impl ServerManager {
             .arg("--temperature").arg(settings.temperature.to_string())
             .arg("--top-p").arg(settings.top_p.to_string())
             .arg("--top-k").arg(settings.top_k.to_string())
-            .arg("--repeat-penalty").arg(settings.repeat_penalty.to_string());
+            .arg("--repeat-penalty").arg(settings.repeat_penalty.to_string())
+            .arg("--presence-penalty").arg(settings.presence_penalty.to_string());
 
         // Flash Attention
         if !settings.flash_attn.is_empty() {

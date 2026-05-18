@@ -46,6 +46,13 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ui.label(format!("{:.2}", settings.repeat_penalty));
     });
 
+    // 存在惩罚
+    ui.horizontal(|ui| {
+        ui.label(i18n::t(i18n::Key::LabelPresencePenalty, lang));
+        ui.add(egui::Slider::new(&mut settings.presence_penalty, -2.0..=2.0));
+        ui.label(format!("{:.2}", settings.presence_penalty));
+    });
+
     // Flash Attention
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelFlashAttn, lang));
