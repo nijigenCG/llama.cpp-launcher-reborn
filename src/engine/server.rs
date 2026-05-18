@@ -151,7 +151,7 @@ impl ServerManager {
             .arg("--ctx-size").arg(settings.n_ctx.to_string())
             .arg("--parallel").arg(settings.parallel_slots.to_string())
             .arg("--n-gpu-layers").arg(settings.gpu_layers_mode.to_arg())
-            .arg("--temp").arg(settings.temperature.to_string())
+            .arg("--temperature").arg(settings.temperature.to_string())
             .arg("--top-p").arg(settings.top_p.to_string())
             .arg("--top-k").arg(settings.top_k.to_string())
             .arg("--repeat-penalty").arg(settings.repeat_penalty.to_string());
