@@ -152,6 +152,10 @@ pub enum Key {
     AboutTitle,
     AboutVersion,
     AboutDescription,
+    AboutCopyright,
+
+    // 菜单 - 项目地址
+    MenuItemRepo,
 
     // 通用
     GenericSelectModule,
@@ -173,6 +177,8 @@ impl Key {
             (Key::MenuItemAutoStart, &Language::En) => "Auto Start",
             (Key::MenuItemAbout, &Language::Zh) => "关于",
             (Key::MenuItemAbout, &Language::En) => "About",
+            (Key::MenuItemRepo, &Language::Zh) => "项目地址",
+            (Key::MenuItemRepo, &Language::En) => "Repository",
             (Key::MenuItemCreateShortcut, &Language::Zh) => "创建桌面快捷方式",
             (Key::MenuItemCreateShortcut, &Language::En) => "Create Desktop Shortcut",
 
@@ -425,6 +431,8 @@ impl Key {
             (Key::AboutVersion, &Language::En) => "llama.cpp launcher v0.1.0",
             (Key::AboutDescription, &Language::Zh) => "llama-server 图形启动器",
             (Key::AboutDescription, &Language::En) => "llama-server GUI launcher",
+            (Key::AboutCopyright, &Language::Zh) => "© yihuishou. All rights reserved.",
+            (Key::AboutCopyright, &Language::En) => "© yihuishou. All rights reserved.",
 
             // 通用
             (Key::GenericSelectModule, &Language::Zh) => "请选择一个功能模块",

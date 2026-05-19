@@ -147,12 +147,21 @@ impl eframe::App for LlamaLauncherApp {
                 .collapsible(false)
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                .fixed_size([150.0, 0.0])
                 .show(ctx, |ui| {
                     ui.label(i18n::t(i18n::Key::AboutVersion, &self.lang));
                     ui.label(i18n::t(i18n::Key::AboutDescription, &self.lang));
-                    if ui.button(i18n::t(i18n::Key::BtnClose, &self.lang)).clicked() {
-                        self.show_about = false;
-                    }
+                    ui.separator();
+                    ui.horizontal_wrapped(|ui| {
+                        ui.label(egui::RichText::new(i18n::t(i18n::Key::AboutCopyright, &self.lang)).size(10.0));
+                    });
+                    // 关闭按钮居中显示
+                    ui.horizontal_centered(|ui| {
+                        if ui.button(i18n::t(i18n::Key::BtnClose, &self.lang)).clicked()
+                        {
+                            self.show_about = false;
+                        }
+                   });
                 });
         }
 
@@ -214,6 +223,9 @@ impl eframe::App for LlamaLauncherApp {
                 ui.menu_button(i18n::t(i18n::Key::MenuHelp, &self.lang), |ui| {
                     if ui.button(i18n::t(i18n::Key::MenuItemAbout, &self.lang)).clicked() {
                         self.show_about = true;
+                    }
+                    if ui.button(i18n::t(i18n::Key::MenuItemRepo, &self.lang)).clicked() {
+                        open_repo_url();
                     }
                 });
 
@@ -306,19 +318,35 @@ fn enable_auto_start() {}
 #[cfg(not(target_os = "windows"))]
 fn disable_auto_start() {}
 
-// 用系统默认浏览器打开 Web Client
-#[cfg(target_os = "windows")]
-fn open_web_client_url(port: u16) {
-    let url = format!("http://127.0.0.1:{}", port);
-    let _ = std::process::Command::new("cmd")
-        .args(&["/c", "start", "", &url])
-        .spawn();
-}
+     // 用系统默认浏览器打开 Web Client
+    #[cfg(target_os = "windows")]
+    fn open_web_client_url(port: u16) {
+        let url = format!("http://127.0.0.1:{}", port);
+        let _ = std::process::Command::new("cmd")
+            .args(&["/c", "start", "", &url])
+            .spawn();
+    }
 
-#[cfg(not(target_os = "windows"))]
-fn open_web_client_url(port: u16) {
-    use std::process::Command;
-    let url = format!("http://127.0.0.1:{}", port);
-    // 简单 fallback，失败则忽略
-    let _ = Command::new("xdg-open").arg(&url).spawn();
-}
+    #[cfg(not(target_os = "windows"))]
+    fn open_web_client_url(port: u16) {
+        use std::process::Command;
+        let url = format!("http://127.0.0.1:{}", port);
+        // 简单 fallback，失败则忽略
+        let _ = Command::new("xdg-open").arg(&url).spawn();
+    }
+
+    // 打开项目 GitHub 地址
+    #[cfg(target_os = "windows")]
+    fn open_repo_url() {
+        let url = "https://github.com/yihuishou/llama.cpp-launcher";
+        let _ = std::process::Command::new("cmd")
+            .args(&["/c", "start", "", url])
+            .spawn();
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn open_repo_url() {
+        use std::process::Command;
+        let url = "https://github.com/yihuishou/llama.cpp-launcher";
+        let _ = Command::new("xdg-open").arg(url).spawn();
+    }
