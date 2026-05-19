@@ -2,8 +2,11 @@ use crate::config::settings::AppSettings;
 use crate::i18n;
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command};
+use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::thread;
+
+const MAX_LOG_LINES: usize = 10_000; // 日志环形缓冲区最大行数
 
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
@@ -32,7 +35,7 @@ pub struct LogEntry {
 
 struct InnerState {
     child: Option<Child>,
-    logs: Vec<LogEntry>,
+    logs: VecDeque<LogEntry>,
     progress: f32, // 预填充进度 0.0~1.0
 }
 
@@ -49,7 +52,7 @@ impl ServerManager {
             state: ServerState::Idle,
             inner: Arc::new(Mutex::new(InnerState {
                 child: None,
-                logs: Vec::new(),
+                logs: VecDeque::new(),
                 progress: 0.0,
             })),
             launch_command: None,
@@ -75,8 +78,10 @@ impl ServerManager {
         }
     }
 
+    // 对外仍返回 Vec，内部使用 VecDeque 作环形缓冲
     pub fn logs(&self) -> Vec<LogEntry> {
-        self.inner.lock().unwrap().logs.clone()
+        let inner = self.inner.lock().unwrap();
+        inner.logs.iter().cloned().collect()
     }
 
     // 判断 Server 是否已输出 "server is listening on"（表示真正就绪）
@@ -262,7 +267,11 @@ impl ServerManager {
                                     if let Some(v) = p {
                                         inner.progress = v;
                                     }
-                                    inner.logs.push(LogEntry {
+                                    // 超过上限时丢弃最旧的一行
+                                    if inner.logs.len() >= MAX_LOG_LINES {
+                                        inner.logs.pop_front();
+                                    }
+                                    inner.logs.push_back(LogEntry {
                                         text,
                                         level: LogLevel::Info,
                                     });
@@ -300,7 +309,11 @@ impl ServerManager {
                                     if let Some(v) = p {
                                         inner.progress = v;
                                     }
-                                    inner.logs.push(LogEntry {
+                                    // 超过上限时丢弃最旧的一行
+                                    if inner.logs.len() >= MAX_LOG_LINES {
+                                        inner.logs.pop_front();
+                                    }
+                                    inner.logs.push_back(LogEntry {
                                         text,
                                         level,
                                     });
@@ -341,7 +354,11 @@ impl ServerManager {
                 } else {
                     format!("{}: {:?}", i18n::t(i18n::Key::StatusServerCrashed, &i18n::Language::En), status.code())
                 };
-                inner.logs.push(LogEntry {
+                // 超过上限时丢弃最旧的一行
+                if inner.logs.len() >= MAX_LOG_LINES {
+                    inner.logs.pop_front();
+                }
+                inner.logs.push_back(LogEntry {
                     text: exit_msg,
                     level: LogLevel::Warn,
                 });
