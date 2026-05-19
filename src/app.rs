@@ -126,7 +126,7 @@ impl LlamaLunchApp {
             enabled,
             egui::Button::new(i18n::t(i18n::Key::BtnOpenWebClient, &self.lang)),
         ).clicked {
-            open_web_client_url(self.settings.rpc_port);
+            open_web_client_url(self.settings.port);
         }
     }
 }
