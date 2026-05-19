@@ -7,10 +7,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     ui.heading(i18n::t(i18n::Key::SectionPresets, lang));
     ui.separator();
 
-    // 帮助提示
-    ui.small(i18n::t(i18n::Key::HintPresetHelp, lang));
-    ui.add_space(8.0);
-
     // 保存预设区域
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelPresetName, lang));
