@@ -1,7 +1,7 @@
 # src/ui/ — UI 面板目录
 
 ## 职责
-6 个 egui 面板 + 模型文件标签解析。纯 UI 渲染，不包含业务逻辑。
+7 个 egui 面板 + 模型文件标签解析。纯 UI 渲染，不包含业务逻辑。
 
 ## 文件清单
 | 文件 | 面板 | 核心功能 |
@@ -17,9 +17,9 @@
 ## 渲染约定
 - 每帧 `App::update()` 按 `self.state.active_panel` 索引路由到对应面板
 - 面板函数签名统一：`fn ui(&mut Ui, settings: &mut AppSettings, lang: &Language)`
-- `model_panel.rs` 例外：额外接收 `&mut ServerManager, &mut RpcManager`
+- `model_panel.rs` 例外：额外接收 `&mut ServerManager, &mut RpcManager`，支持 Main/Mmproj/DFlash 三种文件模式切换 (`FileMode`)。auto_detect_model_dir() 优先查找 "models"，其次 "model"（大小写不敏感）；DFlash 草稿文件通过 is_dflash_file() 过滤展示
 - `log_panel.rs` 额外接收 `&mut ServerManager, &mut RpcManager`
-- `presets_panel.rs` 例外：返回 bool 表示是否应启动 Server
+- `presets_panel.rs` 例外：返回 bool 表示是否应启动 Server。当应用预设且 auto_start_preset_name == preset.name（或对应自启动开关启用）时，返回 true 触发 Server 启动
 
 ## 标签解析规则 (model_panel::parse_tags)
 文件名去掉 `.gguf` 后缀后按 `-` 分割:
