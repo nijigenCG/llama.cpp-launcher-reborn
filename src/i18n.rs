@@ -70,7 +70,9 @@ pub enum Key {
     GpuLayersAll,
     GpuLayersManual,
     CheckboxVerbose,
+    CheckboxOfflineMode,       // “离线模式”
     CheckboxRpcMode,
+    CheckboxEnableWebClient,
     LabelRpcEndpoints,
     HintRpcEndpoints,
     DialogSelectServer,
@@ -269,9 +271,16 @@ impl Key {
             (Key::GpuLayersManual, &Language::En) => "Manual",
             (Key::CheckboxVerbose, &Language::Zh) => "详细输出",
           (Key::CheckboxVerbose, &Language::En) => "Verbose output",
-(Key::CheckboxRpcMode, &Language::Zh) => "RPC 模式",
-    (Key::CheckboxRpcMode, &Language::En) => "RPC Mode",
-            (Key::LabelRpcEndpoints, &Language::Zh) => "RPC 节点地址:",
+
+             // 离线模式
+             (Key::CheckboxOfflineMode, &Language::Zh) => "离线模式",
+             (Key::CheckboxOfflineMode, &Language::En) => "Offline Mode",
+
+    (Key::CheckboxRpcMode, &Language::Zh) => "RPC 模式",
+     (Key::CheckboxRpcMode, &Language::En) => "RPC Mode",
+             (Key::CheckboxEnableWebClient, &Language::Zh) => "启用网页客户端",
+             (Key::CheckboxEnableWebClient, &Language::En) => "Enable Web Client",
+             (Key::LabelRpcEndpoints, &Language::Zh) => "RPC 节点地址:",
             (Key::LabelRpcEndpoints, &Language::En) => "RPC Endpoints:",
    (Key::HintRpcEndpoints, &Language::Zh) => "逗号分隔，如: 主机IP:端口,从机IP:端口",
     (Key::HintRpcEndpoints, &Language::En) => "comma separated, e.g.: host:port,host:port",

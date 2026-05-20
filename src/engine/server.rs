@@ -272,9 +272,21 @@ impl ServerManager {
             cmd.arg("--verbose");
         }
 
+        // 离线模式：拼接 --offline（如 llama.cpp 支持）
+        if settings.offline_mode {
+            cmd.arg("--offline");
+        }
+
         // RPC 模式
         if settings.rpc_mode {
             cmd.arg("--rpc").arg(&settings.rpc_endpoints);
+        }
+
+        // 网页客户端开关：启用用 --webui，禁用用 --no-webui
+        if settings.web_ui_enabled {
+            cmd.arg("--webui");
+        } else {
+            cmd.arg("--no-webui");
         }
 
         // 记录启动命令

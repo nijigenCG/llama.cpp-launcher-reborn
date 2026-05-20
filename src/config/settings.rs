@@ -84,6 +84,10 @@ fn default_flash_attn() -> String {
     "auto".to_string()
 }
 
+fn default_web_ui_enabled() -> bool {
+    true
+}
+
 fn default_auto_scroll_logs() -> bool {
     true
 }
@@ -122,9 +126,17 @@ pub struct Preset {
     pub n_cpu_moe: usize,
     // 高级
     pub verbose: bool,
+    // 离线模式
+    #[serde(default)]
+    pub offline_mode: bool,
+
     // RPC 模式
     pub rpc_mode: bool,
     pub rpc_endpoints: String,
+
+    // 网页客户端开关
+    #[serde(default = "default_web_ui_enabled")]
+    pub web_ui_enabled: bool,
 }
 
 impl Default for Preset {
@@ -151,8 +163,10 @@ impl Default for Preset {
             cpu_moe: false,
             n_cpu_moe: 0,
             verbose: false,
+            offline_mode: false,
             rpc_mode: false,
             rpc_endpoints: "127.0.0.1:50052".to_string(),
+            web_ui_enabled: default_web_ui_enabled(),
         }
     }
 }
@@ -179,11 +193,13 @@ impl Preset {
             gpu_layers_mode: settings.gpu_layers_mode,
             split_mode: settings.split_mode.clone(),
             tensor_split: settings.tensor_split.clone(),
-            cpu_moe: settings.cpu_moe,
-            n_cpu_moe: settings.n_cpu_moe,
-            verbose: settings.verbose,
-            rpc_mode: settings.rpc_mode,
+           cpu_moe: settings.cpu_moe,
+             n_cpu_moe: settings.n_cpu_moe,
+             verbose: settings.verbose,
+             offline_mode: settings.offline_mode,
+             rpc_mode: settings.rpc_mode,
             rpc_endpoints: settings.rpc_endpoints.clone(),
+            web_ui_enabled: settings.web_ui_enabled,
         }
     }
 
@@ -209,8 +225,10 @@ impl Preset {
         settings.cpu_moe = self.cpu_moe;
         settings.n_cpu_moe = self.n_cpu_moe;
         settings.verbose = self.verbose;
+        settings.offline_mode = self.offline_mode;
         settings.rpc_mode = self.rpc_mode;
         settings.rpc_endpoints = self.rpc_endpoints;
+        settings.web_ui_enabled = self.web_ui_enabled;
     }
 }
 
@@ -263,11 +281,19 @@ pub struct AppSettings {
     // 高级
     pub verbose: bool,
 
+    // 离线模式
+    #[serde(default)]
+    pub offline_mode: bool,
+
     // RPC 模式 (llama-server)
     #[serde(default)]
     pub rpc_mode: bool,
     #[serde(default)]
     pub rpc_endpoints: String,
+
+    // 网页客户端开关（默认启用）
+    #[serde(default = "default_web_ui_enabled")]
+    pub web_ui_enabled: bool,
 
     // 预设
     #[serde(default)]
@@ -328,10 +354,12 @@ impl Default for AppSettings {
             rpc_port: 50052,
             rpc_threads: 8,
             rpc_device: "".to_string(),
-            rpc_cache: false,
-            verbose: false,
+           rpc_cache: false,
+             verbose: false,
+            offline_mode: false,
             rpc_mode: false,
             rpc_endpoints: "127.0.0.1:50052".to_string(),
+            web_ui_enabled: default_web_ui_enabled(),
             presets: Vec::new(),
             new_preset_name: String::new(),
             rename_preset_index: None,

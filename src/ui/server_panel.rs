@@ -41,7 +41,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         ui.add(egui::DragValue::new(&mut settings.port).range(1..=65535));
     });
 
-    ui.add_space(4.0);
+    ui.add_space(8.0);
 
     // 快捷按钮
     ui.horizontal(|ui| {
@@ -61,10 +61,13 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         ui.add(egui::DragValue::new(&mut settings.parallel_slots).range(1..=32));
     });
 
-    ui.add_space(8.0);
+    // 功能开关（统一紧凑排列）
     ui.checkbox(&mut settings.verbose, i18n::t(i18n::Key::CheckboxVerbose, lang));
 
-    ui.add_space(8.0);
+    // 离线模式勾选框
+    ui.checkbox(&mut settings.offline_mode, i18n::t(i18n::Key::CheckboxOfflineMode, lang));
+
+    ui.add_space(2.0);
     ui.checkbox(&mut settings.rpc_mode, i18n::t(i18n::Key::CheckboxRpcMode, lang));
     if settings.rpc_mode {
         ui.indent("rpc_endpoints", |ui| {
@@ -75,4 +78,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
             });
         });
     }
+
+    ui.add_space(8.0);
+    ui.checkbox(&mut settings.web_ui_enabled, i18n::t(i18n::Key::CheckboxEnableWebClient, lang));
 }
