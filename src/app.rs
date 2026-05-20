@@ -318,35 +318,77 @@ fn enable_auto_start() {}
 #[cfg(not(target_os = "windows"))]
 fn disable_auto_start() {}
 
-     // 用系统默认浏览器打开 Web Client
-    #[cfg(target_os = "windows")]
-    fn open_web_client_url(port: u16) {
-        let url = format!("http://127.0.0.1:{}", port);
-        let _ = std::process::Command::new("cmd")
-            .args(&["/c", "start", "", &url])
-            .spawn();
+ // 用 ShellExecuteW 打开 URL，无黑窗口 (Windows)
+#[cfg(target_os = "windows")]
+mod shell_execute {
+    use std::ffi::{c_void, OsStr};
+    use std::os::windows::ffi::OsStrExt;
+
+    #[link(name = "shell32", kind = "dylib")]
+    extern "system" {
+        fn ShellExecuteW(
+            hwnd: *mut c_void,
+            lpOperation: *const u16,
+            lpFile: *const u16,
+            lpParameters: *const u16,
+            lpDirectory: *const u16,
+            nShowCmd: i32,
+        ) -> isize;
     }
 
-    #[cfg(not(target_os = "windows"))]
-    fn open_web_client_url(port: u16) {
-        use std::process::Command;
-        let url = format!("http://127.0.0.1:{}", port);
-        // 简单 fallback，失败则忽略
-        let _ = Command::new("xdg-open").arg(&url).spawn();
-    }
+    const SW_SHOWNORMAL: i32 = 1;
 
-    // 打开项目 GitHub 地址
-    #[cfg(target_os = "windows")]
-    fn open_repo_url() {
-        let url = "https://github.com/yihuishou/llama.cpp-launcher";
-        let _ = std::process::Command::new("cmd")
-            .args(&["/c", "start", "", url])
-            .spawn();
-    }
+    pub(crate) fn open_url(url: &str) {
+        let op_utf16 = OsStr::new("open")
+            .encode_wide()
+            .chain(Some(0))
+            .collect::<Vec<u16>>();
 
-    #[cfg(not(target_os = "windows"))]
-    fn open_repo_url() {
-        use std::process::Command;
-        let url = "https://github.com/yihuishou/llama.cpp-launcher";
-        let _ = Command::new("xdg-open").arg(url).spawn();
+        let file_utf16 = OsStr::new(url)
+            .encode_wide()
+            .chain(Some(0))
+            .collect::<Vec<u16>>();
+
+        // 调用 ShellExecuteW，不产生控制台窗口
+        let _res = unsafe {
+            ShellExecuteW(
+                std::ptr::null_mut(),
+                op_utf16.as_ptr(),
+                file_utf16.as_ptr(),
+                std::ptr::null::<u16>(),
+                std::ptr::null::<u16>(),
+                SW_SHOWNORMAL,
+            )
+        };
+
+        // 如需错误处理：_res as isize <= 32 表示失败；当前保持轻量不额外弹窗。
     }
+}
+
+// WebClient: 用系统默认浏览器打开 http://127.0.0.1:<port>
+#[cfg(target_os = "windows")]
+fn open_web_client_url(port: u16) {
+    let url = format!("http://127.0.0.1:{}", port);
+    shell_execute::open_url(&url);
+}
+
+#[cfg(not(target_os = "windows"))]
+fn open_web_client_url(port: u16) {
+    use std::process::Command;
+    let url = format!("http://127.0.0.1:{}", port);
+    // 简单 fallback，失败则忽略
+    let _ = Command::new("xdg-open").arg(&url).spawn();
+}
+
+// GitHub 仓库页面
+#[cfg(target_os = "windows")]
+fn open_repo_url() {
+    shell_execute::open_url("https://github.com/yihuishou/llama.cpp-launcher");
+}
+
+#[cfg(not(target_os = "windows"))]
+fn open_repo_url() {
+    use std::process::Command;
+    let url = "https://github.com/yihuishou/llama.cpp-launcher";
+    let _ = Command::new("xdg-open").arg(url).spawn();
+}
