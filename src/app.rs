@@ -280,35 +280,65 @@ impl Drop for LlamaLauncherApp {
     }
 }
 
-// Windows 开机自启动注册表操作函数
+// Windows 开机自启动注册表操作函数（修正版：使用 /v，并记录错误）
 #[cfg(target_os = "windows")]
 fn enable_auto_start() {
     let exe_path = match std::env::current_exe() {
         Ok(p) => p,
-        Err(_) => return,
+        Err(e) => {
+            log::error!("获取当前 exe 路径失败: {}", e);
+            return;
+        }
     };
 
-    // /d 与值分开，路径用双引号包裹；开机自启时附带 --autostart-minimized 参数启动最小化窗口
+    // reg add 标准语法：reg add <Key> /v <ValueName> /d <Data> /f
     let path_str = exe_path.to_string_lossy().to_string();
-    let _ = std::process::Command::new("reg")
+    match std::process::Command::new("reg")
         .arg("add")
         .arg(r#"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"#)
+        .arg("/v")
         .arg("llama.cpp launcher")
         .arg("/d")
         .arg(format!("\"{}\" --autostart-minimized", path_str))
         .arg("/f")
-        .output();
+        .output()
+    {
+        Ok(output) => {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                log::error!("reg add 失败: {}", stderr.trim());
+            } else {
+                log::info!("开机自启注册表项已添加");
+            }
+        }
+        Err(e) => {
+            log::error!("执行 reg 命令出错: {}", e);
+        }
+    }
 }
 
 #[cfg(target_os = "windows")]
 fn disable_auto_start() {
-    let _ = std::process::Command::new("reg")
+    match std::process::Command::new("reg")
         .arg("delete")
         .arg(r#"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"#)
         .arg("/v")
         .arg("llama.cpp launcher")
         .arg("/f")
-        .output();
+        .output()
+    {
+        Ok(output) => {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                log::error!("reg delete 失败: {}", stderr.trim());
+            } else {
+                log::info!("开机自启注册表项已移除");
+            }
+        }
+        Err(e) => {
+            log::error!("执行 reg 命令出错: {}", e);
+        }
+    }
 }
 
 // 非 Windows 平台的空实现
