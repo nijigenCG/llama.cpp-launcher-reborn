@@ -70,7 +70,7 @@ impl<'de> serde::Deserialize<'de> for GpuLayersMode {
 }
 
 impl GpuLayersMode {
-    /// 生成 --n-gpu-layers 参数值
+    /// 生成 --gpu-layers 参数值
     pub fn to_arg(&self) -> String {
         match self {
             GpuLayersMode::Auto => "auto".to_string(),

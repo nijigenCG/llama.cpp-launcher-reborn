@@ -351,7 +351,7 @@ impl Key {
             (Key::LabelRepeatPenalty, &Language::En) => "Repeat Penalty:",
             (Key::LabelPresencePenalty, &Language::Zh) => "存在惩罚:",
             (Key::LabelPresencePenalty, &Language::En) => "Presence Penalty:",
-            (Key::LabelFlashAttn, &Language::Zh) => "Flash Attention（加速算法）:",
+            (Key::LabelFlashAttn, &Language::Zh) => "Flash Attention:",
             (Key::LabelFlashAttn, &Language::En) => "Flash Attention:",
             // Flash Attention 模式选项
             (Key::FaModeOn, &Language::Zh) => "开",
