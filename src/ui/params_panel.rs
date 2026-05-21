@@ -225,6 +225,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             "ngram-map-k4v",
             "ngram-mod",
             "ngram-cache",
+            "dflash",
         ];
 
         ui.horizontal(|ui| {

@@ -243,11 +243,9 @@ impl ServerManager {
             cmd.arg("--model-draft").arg(&settings.dflash_path);
         }
 
-        // 2) --spec-type: 优先级逻辑 (用户选择 > DFlash 兼容 > 不写)
+        // 2) --spec-type: 仅当用户明确选择非 none 时写入，不再自动 fallback dflash
         if settings.spec_type != "none" {
             cmd.arg("--spec-type").arg(&settings.spec_type);
-        } else if dflash_configured {
-            cmd.arg("--spec-type").arg("dflash");
         }
 
         // 3) --spec-draft-*: 仅在 spec_type != "none" 时写入
