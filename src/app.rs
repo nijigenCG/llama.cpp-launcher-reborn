@@ -366,7 +366,7 @@ mod shell_execute {
         ) -> isize;
     }
 
-    const SW_SHOWNORMAL: i32 = 1;
+    const SW_SHOW_NORMAL: i32 = 1;
 
     pub(crate) fn open_url(url: &str) {
         let op_utf16 = OsStr::new("open")
@@ -387,7 +387,7 @@ mod shell_execute {
                 file_utf16.as_ptr(),
                 std::ptr::null::<u16>(),
                 std::ptr::null::<u16>(),
-                SW_SHOWNORMAL,
+                SW_SHOW_NORMAL,
             )
         };
 
