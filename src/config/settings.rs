@@ -107,8 +107,8 @@ fn default_batch_size() -> usize {
     2 // 2k = 2048
 }
 
-fn default_ubatch_size() -> usize {
-    1 // 1k = 1024
+fn default_ubatch_size() -> f32 {
+    0.5 // 0.5k = 512
 }
 
 /// 将旧版原始值（如 4096）转换为 k 单位，若已是小数值则视为 k 单位
@@ -147,15 +147,26 @@ mod deserialize_batch_size {
 }
 
 mod deserialize_ubatch_size {
-    use super::from_raw_or_k;
     use serde::{self, Deserialize};
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<usize, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<f32, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let v = usize::deserialize(deserializer)?;
-        Ok(from_raw_or_k(v))
+        // 兼容旧版整数格式（如 1 → 1.0）和浮点格式（如 0.5）
+        let v = serde_json::Value::deserialize(deserializer)?;
+        match v.as_f64() {
+            Some(n) => {
+                let val = n as f32;
+                // 若为较大原始值（如 1024），转换为 k 单位
+                if val >= 128.0 {
+                    Ok((val / 1024.0).max(0.5))
+                } else {
+                    Ok(val.max(0.5))
+                }
+            }
+            None => Ok(0.5),
+        }
     }
 }
 
@@ -196,7 +207,7 @@ pub struct Preset {
         default = "default_ubatch_size",
         deserialize_with = "deserialize_ubatch_size::deserialize"
     )]
-    pub ubatch_size: usize,      // --ubatch-size (k)
+    pub ubatch_size: f32,        // --ubatch-size (k, 0.5 步进)
     pub temperature: f32,
     pub top_p: f32,
     pub top_k: i32,
@@ -243,7 +254,7 @@ pub struct Preset {
     pub web_ui_enabled: bool,
 }
 
-impl Default for Preset {
+ impl Default for Preset {
     fn default() -> Self {
         Self {
             name: String::new(),
@@ -252,7 +263,7 @@ impl Default for Preset {
             parallel_slots: 1,
             n_ctx: 4,          // 4k = 4096
             batch_size: 2,    // 2k = 2048
-            ubatch_size: 1,   // 1k = 1024
+            ubatch_size: 0.5, // 0.5k = 512
             temperature: 0.8,
             top_p: 0.95,
             top_k: 40,
@@ -286,7 +297,7 @@ impl Preset {
     /// k 值 → 实际参数值 (value * 1024)
     pub fn n_ctx_actual(&self) -> usize { self.n_ctx * 1024 }
     pub fn batch_size_actual(&self) -> usize { self.batch_size * 1024 }
-    pub fn ubatch_size_actual(&self) -> usize { self.ubatch_size * 1024 }
+    pub fn ubatch_size_actual(&self) -> usize { (self.ubatch_size * 1024.0) as usize }
 
     /// 从当前 AppSettings 创建预设快照
     pub fn from_settings(settings: &AppSettings, name: String) -> Self {
@@ -391,7 +402,7 @@ pub struct AppSettings {
         default = "default_ubatch_size",
         deserialize_with = "deserialize_ubatch_size::deserialize"
     )]
-    pub ubatch_size: usize,      // --ubatch-size (k)
+    pub ubatch_size: f32,        // --ubatch-size (k, 0.5 步进)
     pub temperature: f32,
     pub top_p: f32,
     pub top_k: i32,
@@ -490,7 +501,7 @@ impl Default for AppSettings {
             model_dir: PathBuf::new(),
             n_ctx: 4,          // 4k = 4096
             batch_size: 2,    // 2k = 2048
-            ubatch_size: 1,   // 1k = 1024
+            ubatch_size: 0.5, // 0.5k = 512
             temperature: 0.8,
             top_p: 0.95,
             top_k: 40,
@@ -538,7 +549,7 @@ impl AppSettings {
     /// k 值 → 实际参数值 (value * 1024)
     pub fn n_ctx_actual(&self) -> usize { self.n_ctx * 1024 }
     pub fn batch_size_actual(&self) -> usize { self.batch_size * 1024 }
-    pub fn ubatch_size_actual(&self) -> usize { self.ubatch_size * 1024 }
+    pub fn ubatch_size_actual(&self) -> usize { (self.ubatch_size * 1024.0) as usize }
 }
 
 pub struct SettingsManager {

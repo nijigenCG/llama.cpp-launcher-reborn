@@ -28,7 +28,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 最大物理批次大小 (--ubatch-size) (k)
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelUBatchSize, lang));
-        ui.add(egui::DragValue::new(&mut settings.ubatch_size).range(1..=4).speed(1)); // 1k ~ 4k
+        ui.add(egui::DragValue::new(&mut settings.ubatch_size).range(0.5..=16.0).speed(0.5)); // 0.5k ~ 16k, 步进 0.5
         ui.label("k");
         ui.small(i18n::t(i18n::Key::HintKUnit, lang));
     });
