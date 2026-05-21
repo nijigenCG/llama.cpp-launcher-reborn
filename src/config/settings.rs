@@ -294,11 +294,6 @@ pub struct Preset {
 }
 
 impl Preset {
-    /// k 值 → 实际参数值 (value * 1024)
-    pub fn n_ctx_actual(&self) -> usize { self.n_ctx * 1024 }
-    pub fn batch_size_actual(&self) -> usize { self.batch_size * 1024 }
-    pub fn ubatch_size_actual(&self) -> usize { (self.ubatch_size * 1024.0) as usize }
-
     /// 从当前 AppSettings 创建预设快照
     pub fn from_settings(settings: &AppSettings, name: String) -> Self {
         Self {
