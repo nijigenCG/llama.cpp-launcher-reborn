@@ -126,6 +126,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                         .collapsible(false)
                         .resizable(false)
                         .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                        .fixed_size([150.0, 0.0])
                         .show(ui.ctx(), |ui| {
                             ui.label(i18n::t(i18n::Key::LabelPresetName, lang));
                             ui.text_edit_singleline(&mut settings.rename_preset_new_name);
