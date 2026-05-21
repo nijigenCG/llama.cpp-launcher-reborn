@@ -143,6 +143,15 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         });
     });
 
+    // 锁定内存
+    ui.checkbox(&mut settings.kv_mlock, i18n::t(i18n::Key::CheckboxKvMlock, lang));
+
+    // 内存映射
+    ui.checkbox(&mut settings.kv_mmap, i18n::t(i18n::Key::CheckboxKvMmap, lang));
+
+    // 统一键值缓存
+    ui.checkbox(&mut settings.kv_unified, i18n::t(i18n::Key::CheckboxKvUnified, lang));
+
     ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionGpuDevice, lang));
     ui.separator();

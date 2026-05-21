@@ -272,6 +272,17 @@ impl ServerManager {
         if !settings.cache_type_v.is_empty() {
             cmd.arg("--cache-type-v").arg(&settings.cache_type_v);
         }
+        if settings.kv_mlock {
+            cmd.arg("--mlock");
+        }
+        if settings.kv_mmap {
+            cmd.arg("--mmap");
+        } else {
+            cmd.arg("--no-mmap");
+        }
+        if settings.kv_unified {
+            cmd.arg("--kv-unified");
+        }
 
         // GPU 与设备分配
         if !settings.gpu_device.is_empty() {

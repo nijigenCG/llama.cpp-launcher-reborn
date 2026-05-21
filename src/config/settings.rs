@@ -232,6 +232,9 @@ pub struct Preset {
     pub kv_offload: bool,
     pub cache_type_k: String,
     pub cache_type_v: String,
+    pub kv_mlock: bool,              // --mlock
+    pub kv_mmap: bool,               // --mmap / --no-mmap
+    pub kv_unified: bool,            // --kv-unified
     // GPU 与设备分配
     pub gpu_device: String,
     pub gpu_layers_mode: GpuLayersMode,
@@ -278,6 +281,9 @@ pub struct Preset {
             kv_offload: true,
             cache_type_k: "f16".to_string(),
             cache_type_v: "f16".to_string(),
+            kv_mlock: false,
+            kv_mmap: true,
+            kv_unified: false,
             gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::All,
             split_mode: "none".to_string(),
@@ -318,6 +324,9 @@ impl Preset {
             kv_offload: settings.kv_offload,
             cache_type_k: settings.cache_type_k.clone(),
             cache_type_v: settings.cache_type_v.clone(),
+            kv_mlock: settings.kv_mlock,
+            kv_mmap: settings.kv_mmap,
+            kv_unified: settings.kv_unified,
             gpu_device: settings.gpu_device.clone(),
             gpu_layers_mode: settings.gpu_layers_mode,
             split_mode: settings.split_mode.clone(),
@@ -355,6 +364,9 @@ impl Preset {
         settings.kv_offload = self.kv_offload;
         settings.cache_type_k = self.cache_type_k;
         settings.cache_type_v = self.cache_type_v;
+        settings.kv_mlock = self.kv_mlock;
+        settings.kv_mmap = self.kv_mmap;
+        settings.kv_unified = self.kv_unified;
         settings.gpu_device = self.gpu_device;
         settings.gpu_layers_mode = self.gpu_layers_mode;
         settings.split_mode = self.split_mode;
@@ -422,6 +434,9 @@ pub struct AppSettings {
     pub kv_offload: bool,
     pub cache_type_k: String,
     pub cache_type_v: String,
+    pub kv_mlock: bool,              // --mlock
+    pub kv_mmap: bool,               // --mmap / --no-mmap
+    pub kv_unified: bool,            // --kv-unified
 
     // GPU 与设备分配
     pub gpu_device: String,
@@ -515,6 +530,9 @@ impl Default for AppSettings {
             kv_offload: true,
             cache_type_k: "f16".to_string(),
             cache_type_v: "f16".to_string(),
+            kv_mlock: false,
+            kv_mmap: true,
+            kv_unified: false,
             gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::All,
             split_mode: "none".to_string(),
