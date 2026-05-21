@@ -41,6 +41,8 @@ pub enum Key {
     BtnHostAny,
     // 预设
     BtnSavePreset,
+    BtnExportParams,
+    BtnImportParams,
     BtnDeletePreset,
     BtnRenamePreset,
     BtnApplyPreset,
@@ -242,6 +244,12 @@ impl Key {
             (Key::BtnHostAny, &Language::En) => "Any",
             (Key::BtnSavePreset, &Language::Zh) => "保存预设",
             (Key::BtnSavePreset, &Language::En) => "Save Preset",
+
+            // 导出/导入参数预设
+            (Key::BtnExportParams, &Language::Zh) => "导出参数预设",
+            (Key::BtnExportParams, &Language::En) => "Export Parameters",
+            (Key::BtnImportParams, &Language::Zh) => "导入参数预设",
+            (Key::BtnImportParams, &Language::En) => "Import Parameters",
 
             (Key::BtnDeletePreset, &Language::Zh) => "删除",
             (Key::BtnDeletePreset, &Language::En) => "Delete",

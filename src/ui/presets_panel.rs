@@ -1,5 +1,111 @@
-use crate::config::settings::{AppSettings, Preset};
+use crate::config::settings::{AppSettings, GpuLayersMode, Preset};
 use crate::i18n;
+use serde::{Deserialize, Serialize};
+
+/// 导出/导入的“参数面板”专用结构（不包含 Server/RPC/模型路径等）
+#[derive(Serialize, Deserialize)]
+struct ParamsExport {
+    n_ctx: usize,
+    batch_size: usize,
+    ubatch_size: f32,
+    temperature: f32,
+    top_p: f32,
+    top_k: i32,
+    repeat_penalty: f32,
+    presence_penalty: f32,
+    flash_attn: String,
+
+    // 推测解码
+    spec_type: String,
+    spec_draft_n_max: usize,
+    spec_draft_n_min: usize,
+    spec_draft_p_min: f32,
+    spec_draft_p_split: f32,
+
+    // KV 缓存
+    kv_offload: bool,
+    cache_type_k: String,
+    cache_type_v: String,
+    kv_mlock: bool,
+    kv_mmap: bool,
+    kv_unified: bool,
+
+    // GPU/设备分配
+    gpu_device: String,
+    gpu_layers_mode: GpuLayersMode,
+    split_mode: String,
+    tensor_split: String,
+    cpu_moe: bool,
+    n_cpu_moe: usize,
+}
+
+impl ParamsExport {
+    fn from_settings(s: &AppSettings) -> Self {
+        Self {
+            n_ctx: s.n_ctx,
+            batch_size: s.batch_size,
+            ubatch_size: s.ubatch_size,
+            temperature: s.temperature,
+            top_p: s.top_p,
+            top_k: s.top_k,
+            repeat_penalty: s.repeat_penalty,
+            presence_penalty: s.presence_penalty,
+            flash_attn: s.flash_attn.clone(),
+
+            spec_type: s.spec_type.clone(),
+            spec_draft_n_max: s.spec_draft_n_max,
+            spec_draft_n_min: s.spec_draft_n_min,
+            spec_draft_p_min: s.spec_draft_p_min,
+            spec_draft_p_split: s.spec_draft_p_split,
+
+            kv_offload: s.kv_offload,
+            cache_type_k: s.cache_type_k.clone(),
+            cache_type_v: s.cache_type_v.clone(),
+            kv_mlock: s.kv_mlock,
+            kv_mmap: s.kv_mmap,
+            kv_unified: s.kv_unified,
+
+            gpu_device: s.gpu_device.clone(),
+            gpu_layers_mode: s.gpu_layers_mode,
+            split_mode: s.split_mode.clone(),
+            tensor_split: s.tensor_split.clone(),
+            cpu_moe: s.cpu_moe,
+            n_cpu_moe: s.n_cpu_moe,
+        }
+    }
+
+    fn apply_to(self, s: &mut AppSettings) {
+        s.n_ctx = self.n_ctx;
+        s.batch_size = self.batch_size;
+        s.ubatch_size = self.ubatch_size;
+        s.temperature = self.temperature;
+        s.top_p = self.top_p;
+        s.top_k = self.top_k;
+        s.repeat_penalty = self.repeat_penalty;
+        s.presence_penalty = self.presence_penalty;
+        s.flash_attn = self.flash_attn;
+
+        s.spec_type = self.spec_type;
+        s.spec_draft_n_max = self.spec_draft_n_max;
+        s.spec_draft_n_min = self.spec_draft_n_min;
+        s.spec_draft_p_min = self.spec_draft_p_min;
+        s.spec_draft_p_split = self.spec_draft_p_split;
+
+        s.kv_offload = self.kv_offload;
+        s.cache_type_k = self.cache_type_k;
+        s.cache_type_v = self.cache_type_v;
+        s.kv_mlock = self.kv_mlock;
+        s.kv_mmap = self.kv_mmap;
+        s.kv_unified = self.kv_unified;
+
+        s.gpu_device = self.gpu_device;
+        s.gpu_layers_mode = self.gpu_layers_mode;
+        s.split_mode = self.split_mode;
+        s.tensor_split = self.tensor_split;
+        s.cpu_moe = self.cpu_moe;
+        s.n_cpu_moe = self.n_cpu_moe;
+    }
+}
 
 pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) -> bool {
     let mut should_start_server = false;
@@ -28,6 +134,55 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
                 // 保存后清空输入框
                 settings.new_preset_name.clear();
+            }
+        }
+
+        // 导出参数预设按钮（仅导出参数面板相关字段）
+        if ui.small_button(i18n::t(i18n::Key::BtnExportParams, lang)).clicked() {
+            let params = ParamsExport::from_settings(settings);
+            let json = match serde_json::to_string_pretty(&params) {
+                Ok(v) => v,
+                Err(e) => {
+                    eprintln!("[导出参数预设] 序列化失败: {}", e);
+                    return;
+                }
+            };
+
+            // 使用 rfd save_file，建议文件名固定前缀
+            if let Some(path) = rfd::FileDialog::new()
+                .set_file_name("llama_cpp_launcher_parameter_export.json")
+                .add_filter("JSON", &["json"])
+                .save_file()
+            {
+                if let Err(e) = std::fs::write(&path, &json) {
+                    eprintln!("[导出参数预设] 写入失败: {}", e);
+                }
+            }
+        }
+
+        // 导入参数预设按钮（立即应用到参数面板）
+        if ui.small_button(i18n::t(i18n::Key::BtnImportParams, lang)).clicked() {
+            if let Some(path) = rfd::FileDialog::new()
+                .add_filter("JSON", &["json"])
+                .pick_file()
+            {
+                let content = match std::fs::read_to_string(&path) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        eprintln!("[导入参数预设] 读取失败: {}", e);
+                        return;
+                    }
+                };
+
+                // 反序列化为 ParamsExport（允许字段不完全匹配时宽容处理）
+                match serde_json::from_str::<ParamsExport>(&content) {
+                    Ok(params) => {
+                        params.apply_to(settings);
+                    }
+                    Err(e) => {
+                        eprintln!("[导入参数预设] 解析失败: {}", e);
+                    }
+                }
             }
         }
     });
