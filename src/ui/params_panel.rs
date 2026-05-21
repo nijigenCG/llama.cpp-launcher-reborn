@@ -171,7 +171,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 拆分模式
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelSplitMode, lang));
-        let modes = ["layer", "none", "row", "tensor"];
+        let modes = ["none", "layer", "row", "tensor"];
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 8.0;
             for mode in &modes {
