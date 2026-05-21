@@ -481,6 +481,10 @@ pub struct AppSettings {
     // 开机自启动
     #[serde(default)]
     pub auto_start: bool,
+
+    // llama.cpp 版本信息（不序列化，运行时缓存）
+    #[serde(skip, default)]
+    pub llama_version: String,
 }
 
 impl Default for AppSettings {
@@ -536,6 +540,7 @@ impl Default for AppSettings {
             max_log_lines: default_max_log_lines(),
             auto_start: false,
             auto_start_preset_name: None,
+            llama_version: String::new(),
         }
     }
 }

@@ -1,5 +1,6 @@
 use crate::config::settings::{AppSettings, SettingsManager};
 use crate::i18n;
+use std::os::windows::process::CommandExt;
 
 pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &SettingsManager, lang: &i18n::Language) {
     ui.heading(i18n::t(i18n::Key::PanelServerTitle, lang));
@@ -22,6 +23,52 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
                 settings.server_path = path;
             } else {
                 settings.server_path = std::path::PathBuf::from("");
+            }
+        }
+
+        // 查看 llama.cpp 版本按钮（与自动检测同排）
+        let server_path_valid = settings.server_path
+            .file_name()
+            .and_then(|f| f.to_str())
+            .is_some_and(|name| name == "llama-server.exe")
+            && settings.server_path.exists();
+
+        if server_path_valid {
+            if ui.add_enabled(
+                true,
+                egui::Button::new(i18n::t(i18n::Key::BtnCheckVersion, lang)),
+            ).clicked {
+                // 使用 CREATE_NO_WINDOW 防止弹出命令行窗口
+                 let mut cmd = std::process::Command::new(&settings.server_path);
+                 cmd.arg("--version")
+                     .stdout(std::process::Stdio::piped())
+                     .stderr(std::process::Stdio::piped())
+                     .creation_flags(windows::Win32::System::Threading::CREATE_NO_WINDOW.0);
+                 match cmd.output()
+                {
+                    Ok(output) => {
+                        let stdout = String::from_utf8_lossy(&output.stdout);
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        let version = stdout
+                            .lines()
+                            .chain(stderr.lines())
+                            .find(|line| line.contains("version:"))
+                            .and_then(|line| {
+                                line.split_once("version:")
+                                    .map(|(_, v)| v.trim().to_string())
+                            })
+                            .unwrap_or_else(|| "未知版本".to_string());
+                        settings.llama_version = version;
+                    }
+                    Err(e) => {
+                        settings.llama_version = format!("获取失败: {}", e);
+                    }
+                }
+            }
+
+            // 小字显示版本信息
+            if !settings.llama_version.is_empty() {
+                ui.small(egui::RichText::new(&settings.llama_version).weak());
             }
         }
     });
