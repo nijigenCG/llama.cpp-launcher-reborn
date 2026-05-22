@@ -299,7 +299,7 @@ fn enable_auto_start() {
         .arg("/v")
         .arg("llama.cpp launcher")
         .arg("/d")
-        .arg(format!("\"{}\" --autostart-minimized", path_str))
+        .arg(format!("\"{}\"", path_str))
         .arg("/f")
         .output()
     {

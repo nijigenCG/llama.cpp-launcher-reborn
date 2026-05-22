@@ -33,8 +33,6 @@ llama.cpp 桌面启动器。Rust + eframe/egui 0.29 GUI，管理 llama-server/RP
 ## Windows特有功能 (高层)
 - 开机自启: HKEY_CURRENT_USER\...\Run (enable/disable_auto_start)。
 - 桌面快捷方式: shortcuts-rs, locale-aware名称。
-- --autostart-minimized CLI flag。
-
 ## 全局约束
 - 单binary, Windows优先。
 - 进程管理: std::process::Child + Arc<Mutex<>> + Drop自动停止。
