@@ -1,3 +1,6 @@
+/// 从 Cargo.toml 读取的版本号常量（编译时注入）
+const ABOUT_VERSION_TEXT: &str = concat!("llama.cpp launcher v", env!("CARGO_PKG_VERSION"));
+
 /// 语言枚举
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum Language {
@@ -498,8 +501,8 @@ impl Key {
             // 关于
             (Key::AboutTitle, &Language::Zh) => "关于",
             (Key::AboutTitle, &Language::En) => "About",
-            (Key::AboutVersion, &Language::Zh) => "llama.cpp launcher v0.1.0",
-            (Key::AboutVersion, &Language::En) => "llama.cpp launcher v0.1.0",
+            (Key::AboutVersion, &Language::Zh) => ABOUT_VERSION_TEXT,
+            (Key::AboutVersion, &Language::En) => ABOUT_VERSION_TEXT,
             (Key::AboutDescription, &Language::Zh) => "llama-server 图形启动器",
             (Key::AboutDescription, &Language::En) => "llama-server GUI launcher",
             (Key::AboutCopyright, &Language::Zh) => "© yihuishou. All rights reserved.",
