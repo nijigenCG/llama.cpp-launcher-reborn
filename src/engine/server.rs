@@ -218,6 +218,7 @@ impl ServerManager {
             .arg("--parallel").arg(settings.parallel_slots.to_string())
             .arg("--batch-size").arg(settings.batch_size_actual().to_string())
             .arg("--ubatch-size").arg(settings.ubatch_size_actual().to_string())
+            .arg("--timeout").arg(settings.session_timeout.to_string())
             .arg("--gpu-layers").arg(settings.gpu_layers_mode.to_arg())
             .arg("--temperature").arg(settings.temperature.to_string())
             .arg("--top-p").arg(settings.top_p.to_string())
