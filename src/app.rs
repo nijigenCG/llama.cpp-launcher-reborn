@@ -141,7 +141,14 @@ impl eframe::App for LlamaLauncherApp {
             ctx.request_repaint_after(std::time::Duration::from_millis(500));
 
             // 根据调试模式开关，控制 egui Inspector（悬浮时显示内置检查器面板）
+            // 开启时同时启用 hover_shows_next，方便查看控件之间的间距/位置关系
             ctx.set_debug_on_hover(self.debug_mode);
+            #[cfg(debug_assertions)]
+            {
+                ctx.style_mut(|s| {
+                    s.debug.hover_shows_next = self.debug_mode;
+                });
+            }
         }
 
         // 应用启动时自动启动 Server
