@@ -158,7 +158,7 @@ fn render_file_list(
             for (text, color) in &tags {
                 ui.add(egui::Button::new(egui::RichText::new(text).color(egui::Color32::WHITE))
                     .fill(*color)
-                    .rounding(4.0));
+                    .corner_radius(4.0));
             }
 
             ui.separator();
@@ -166,7 +166,7 @@ fn render_file_list(
             // 单选框
             if ui
                 .add(egui::RadioButton::new(selected, ""))
-                .clicked
+                .clicked()
             {
                 on_select(file_path);
             }

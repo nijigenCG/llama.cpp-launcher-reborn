@@ -74,13 +74,13 @@ impl LlamaLauncherApp {
                     && !self.settings.model_path.as_os_str().is_empty();
                 if ui
                     .add_enabled(can_start, egui::Button::new(i18n::t(i18n::Key::BtnStartServer, &self.lang)).fill(start_fill))
-                    .clicked
+                    .clicked()
                 {
                     self.server_manager.start(&self.settings);
                 }
             }
             ServerState::Running => {
-                if ui.add(egui::Button::new(i18n::t(i18n::Key::BtnStopServer, &self.lang)).fill(stop_fill)).clicked {
+                if ui.add(egui::Button::new(i18n::t(i18n::Key::BtnStopServer, &self.lang)).fill(stop_fill)).clicked() {
                     self.server_manager.stop();
                 }
             }
@@ -102,13 +102,13 @@ impl LlamaLauncherApp {
                     .is_some_and(|name| name == "rpc-server.exe");
                 if ui
                     .add_enabled(rpc_path_valid, egui::Button::new(i18n::t(i18n::Key::BtnStartRpc, &self.lang)).fill(rpc_start_fill))
-                    .clicked
+                    .clicked()
                 {
                     self.rpc_manager.start(&self.settings);
                 }
             }
             RpcState::Running => {
-                if ui.add(egui::Button::new(i18n::t(i18n::Key::BtnStopRpc, &self.lang)).fill(rpc_stop_fill)).clicked {
+                if ui.add(egui::Button::new(i18n::t(i18n::Key::BtnStopRpc, &self.lang)).fill(rpc_stop_fill)).clicked() {
                     self.rpc_manager.stop();
                 }
             }
@@ -125,14 +125,17 @@ impl LlamaLauncherApp {
         if ui.add_enabled(
             enabled,
             egui::Button::new(i18n::t(i18n::Key::BtnOpenWebClient, &self.lang)),
-        ).clicked {
+        ).clicked() {
             open_web_client_url(self.settings.port);
         }
     }
 }
 
 impl eframe::App for LlamaLauncherApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = ui.ctx();
+        ctx.request_repaint_after(std::time::Duration::from_millis(500));
+
         // 应用启动时自动启动 Server
         if self.auto_start_server_on_first_frame {
             self.auto_start_server_on_first_frame = false;
@@ -148,7 +151,7 @@ impl eframe::App for LlamaLauncherApp {
                 .resizable(false)
                 .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
                 .fixed_size([150.0, 0.0])
-                .show(ctx, |ui| {
+                .show(ui, |ui| {
                     ui.label(i18n::t(i18n::Key::AboutVersion, &self.lang));
                     ui.label(i18n::t(i18n::Key::AboutDescription, &self.lang));
                     ui.separator();
@@ -165,8 +168,8 @@ impl eframe::App for LlamaLauncherApp {
                 });
         }
 
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+        egui::Panel::top("top_panel").show_inside(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 ui.menu_button(i18n::t(i18n::Key::MenuFile, &self.lang), |ui| {
                     if ui.button(i18n::t(i18n::Key::MenuItemSaveConfig, &self.lang)).clicked() {
                         self.save();
@@ -247,7 +250,7 @@ impl eframe::App for LlamaLauncherApp {
             });
         });
 
-        egui::CentralPanel::default().show(ctx, |ui| {
+        egui::CentralPanel::default().show_inside(ui, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 match self.tab_selected.as_str() {
                     tab if tab == i18n::t(i18n::Key::TabServer, &self.lang) => server_panel::ui(ui, &mut self.settings, &self.settings_manager, &self.lang),
@@ -263,12 +266,10 @@ impl eframe::App for LlamaLauncherApp {
                         }
                     }
 
-                    _ => { ui.label(i18n::t(i18n::Key::GenericSelectModule, &self.lang)); }
+                   _ => { ui.label(i18n::t(i18n::Key::GenericSelectModule, &self.lang)); }
                 }
             });
         });
-
-        ctx.request_repaint_after(std::time::Duration::from_millis(500));
     }
 }
 

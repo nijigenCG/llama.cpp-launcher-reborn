@@ -9,6 +9,7 @@ mod shortcut;
 
 use app::LlamaLauncherApp;
 use egui::{FontData, FontDefinitions, FontFamily};
+use std::sync::Arc;
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -39,7 +40,7 @@ fn main() -> eframe::Result {
     )
 }
 
-/// 从系统字体目录加载 CJK 中文字体
+/// 从系统字体目录加载 CJK 中文字体 (适配 egui 0.34: Arc<FontData>)
 fn load_cjk_fonts(fonts: &mut FontDefinitions) {
     let cjk_proportional: Vec<&str> = if cfg!(target_os = "windows") {
         // Windows 中文字体文件路径
@@ -52,7 +53,7 @@ fn load_cjk_fonts(fonts: &mut FontDefinitions) {
             .into_iter()
             .filter_map(|(path, name)| {
                 if let Ok(data) = std::fs::read(path) {
-                    fonts.font_data.insert(name.to_string(), FontData::from_owned(data));
+                    fonts.font_data.insert(name.to_string(), Arc::new(FontData::from_owned(data)));
                     Some(name)
                 } else {
                     None
@@ -68,7 +69,7 @@ fn load_cjk_fonts(fonts: &mut FontDefinitions) {
             .into_iter()
             .filter_map(|(path, name)| {
                 if let Ok(data) = std::fs::read(path) {
-                    fonts.font_data.insert(name.to_string(), FontData::from_owned(data));
+                    fonts.font_data.insert(name.to_string(), Arc::new(FontData::from_owned(data)));
                     Some(name)
                 } else {
                     None
@@ -88,7 +89,7 @@ fn load_cjk_fonts(fonts: &mut FontDefinitions) {
             .into_iter()
             .filter_map(|(path, name)| {
                 if let Ok(data) = std::fs::read(path) {
-                    fonts.font_data.insert(name.to_string(), FontData::from_owned(data));
+                    fonts.font_data.insert(name.to_string(), Arc::new(FontData::from_owned(data)));
                     Some(name)
                 } else {
                     None

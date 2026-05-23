@@ -1,5 +1,6 @@
 use crate::config::settings::{AppSettings, SettingsManager};
 use crate::i18n;
+#[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
 pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &SettingsManager, lang: &i18n::Language) {
@@ -37,13 +38,14 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
             if ui.add_enabled(
                 true,
                 egui::Button::new(i18n::t(i18n::Key::BtnCheckVersion, lang)),
-            ).clicked {
-                // 使用 CREATE_NO_WINDOW 防止弹出命令行窗口
-                 let mut cmd = std::process::Command::new(&settings.server_path);
-                 cmd.arg("--version")
-                     .stdout(std::process::Stdio::piped())
-                     .stderr(std::process::Stdio::piped())
-                     .creation_flags(windows::Win32::System::Threading::CREATE_NO_WINDOW.0);
+              ).clicked() {
+           // 使用 CREATE_NO_WINDOW 防止弹出命令行窗口（Windows）
+             let mut cmd = std::process::Command::new(&settings.server_path);
+             cmd.arg("--version")
+                 .stdout(std::process::Stdio::piped())
+                 .stderr(std::process::Stdio::piped());
+             #[cfg(target_os = "windows")]
+             cmd.creation_flags(0x0800_0000u32); // CREATE_NO_WINDOW
                  match cmd.output()
                 {
                     Ok(output) => {
