@@ -43,7 +43,7 @@ impl LlamaLauncherApp {
         // 全局 UI 放大 1.5 倍
         cc.egui_ctx.set_zoom_factor(1.5);
 
-       Self {
+        Self {
             settings,
             settings_manager,
             server_manager,
@@ -245,11 +245,11 @@ impl eframe::App for LlamaLauncherApp {
                     if ui.button(i18n::t(i18n::Key::MenuItemRepo, &self.lang)).clicked() {
                         open_repo_url();
                     }
-               // 调试模式：开启 egui Inspector / 内置检查器面板
+                    // 调试模式：开启 egui Inspector / 内置检查器面板
                     ui.checkbox(&mut self.debug_mode, i18n::t(i18n::Key::MenuItemDebugMode, &self.lang));
                 });
 
-                 ui.separator();
+                ui.separator();
                 let status = self.server_manager.status_text(&self.lang);
                 let color = if self.server_manager.is_running() {
                     egui::Color32::from_rgb(110, 255, 140)
@@ -283,7 +283,7 @@ impl eframe::App for LlamaLauncherApp {
                         }
                     }
 
-                   _ => { ui.label(i18n::t(i18n::Key::GenericSelectModule, &self.lang)); }
+                    _ => { ui.label(i18n::t(i18n::Key::GenericSelectModule, &self.lang)); }
                 }
             });
         });

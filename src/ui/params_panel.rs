@@ -61,7 +61,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 .range(0.0..=1.0)
                 .speed(0.01),
         );
-      ui.label(format!("{:.2}", settings.kv_cache_ratio));
+        ui.label(format!("{:.2}", settings.kv_cache_ratio));
     });
 
     // KV 缓存空间计算按钮
@@ -144,7 +144,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         });
     });
 
-  ui.add_space(12.0);
+    ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionKvCache, lang));
     ui.separator();
 
