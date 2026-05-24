@@ -284,6 +284,9 @@ impl ServerManager {
         if settings.kv_unified {
             cmd.arg("--kv-unified");
         }
+        if settings.swa_full {
+            cmd.arg("--swa-full");
+        }
 
         // GPU 与设备分配
         if !settings.gpu_device.is_empty() {

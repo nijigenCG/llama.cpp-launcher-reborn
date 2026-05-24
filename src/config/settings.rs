@@ -244,6 +244,8 @@ pub struct Preset {
     pub kv_mlock: bool,              // --mlock
     pub kv_mmap: bool,               // --mmap / --no-mmap
     pub kv_unified: bool,            // --kv-unified
+    #[serde(default)]
+    pub swa_full: bool,              // --swa-full
     #[serde(default = "default_kv_cache_ratio")]
     pub kv_cache_ratio: f32,         // KV 缓存比例 (不拼接启动命令)
     // GPU 与设备分配
@@ -299,6 +301,7 @@ pub struct Preset {
             kv_mlock: false,
             kv_mmap: true,
             kv_unified: false,
+            swa_full: false,
             kv_cache_ratio: default_kv_cache_ratio(),
             gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::All,
@@ -344,6 +347,7 @@ impl Preset {
             kv_mlock: settings.kv_mlock,
             kv_mmap: settings.kv_mmap,
             kv_unified: settings.kv_unified,
+            swa_full: settings.swa_full,
             kv_cache_ratio: settings.kv_cache_ratio,
             gpu_device: settings.gpu_device.clone(),
             gpu_layers_mode: settings.gpu_layers_mode,
@@ -386,6 +390,7 @@ impl Preset {
         settings.kv_mlock = self.kv_mlock;
         settings.kv_mmap = self.kv_mmap;
         settings.kv_unified = self.kv_unified;
+        settings.swa_full = self.swa_full;
         settings.kv_cache_ratio = self.kv_cache_ratio;
         settings.gpu_device = self.gpu_device;
         settings.gpu_layers_mode = self.gpu_layers_mode;
@@ -458,6 +463,8 @@ pub struct AppSettings {
     pub kv_mlock: bool,              // --mlock
     pub kv_mmap: bool,               // --mmap / --no-mmap
     pub kv_unified: bool,            // --kv-unified
+    #[serde(default)]
+    pub swa_full: bool,              // --swa-full
     #[serde(default = "default_kv_cache_ratio")]
     pub kv_cache_ratio: f32,         // KV 缓存比例 (不拼接启动命令)
 
@@ -560,6 +567,7 @@ impl Default for AppSettings {
             kv_mlock: false,
             kv_mmap: true,
             kv_unified: false,
+            swa_full: false,
             kv_cache_ratio: default_kv_cache_ratio(),
             gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::All,

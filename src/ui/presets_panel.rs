@@ -29,6 +29,7 @@ struct ParamsExport {
     kv_mlock: bool,
     kv_mmap: bool,
     kv_unified: bool,
+    swa_full: bool,
 
     // GPU/设备分配
     gpu_device: String,
@@ -64,6 +65,7 @@ impl ParamsExport {
             kv_mlock: s.kv_mlock,
             kv_mmap: s.kv_mmap,
             kv_unified: s.kv_unified,
+            swa_full: s.swa_full,
 
             gpu_device: s.gpu_device.clone(),
             gpu_layers_mode: s.gpu_layers_mode,
@@ -97,6 +99,7 @@ impl ParamsExport {
         s.kv_mlock = self.kv_mlock;
         s.kv_mmap = self.kv_mmap;
         s.kv_unified = self.kv_unified;
+        s.swa_full = self.swa_full;
 
         s.gpu_device = self.gpu_device;
         s.gpu_layers_mode = self.gpu_layers_mode;

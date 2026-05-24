@@ -170,6 +170,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 统一键值缓存
     ui.checkbox(&mut settings.kv_unified, i18n::t(i18n::Key::CheckboxKvUnified, lang));
 
+    // 完整滑动窗口
+    ui.checkbox(&mut settings.swa_full, i18n::t(i18n::Key::CheckboxSwaFull, lang));
+
     ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionGpuDevice, lang));
     ui.separator();
