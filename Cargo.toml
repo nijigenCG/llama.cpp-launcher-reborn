@@ -18,5 +18,7 @@ dirs = "5.0"
 
 gguf-rs = "0.1.7"
 
+egui-toast = "0.20"
+
 [build-dependencies]
 winres = "0.1.12"
