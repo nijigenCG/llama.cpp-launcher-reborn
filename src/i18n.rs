@@ -425,7 +425,7 @@ impl Key {
             (Key::LabelCacheTypeV, &Language::En) => "V Cache Type:",
 
             // KV 计算按钮和结果标签
-            (Key::BtnCalcKvCache, &Language::Zh) => "计算 KV 缓存空间",
+            (Key::BtnCalcKvCache, &Language::Zh) => "计算 KV 缓存可用空间",
             (Key::BtnCalcKvCache, &Language::En) => "Calculate KV Cache Space",
             (Key::LabelKvCacheResult, &Language::Zh) => "缓存可用空间：",
             (Key::LabelKvCacheResult, &Language::En) => "Available Cache:",

@@ -61,8 +61,28 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 .range(0.0..=1.0)
                 .speed(0.01),
         );
-        ui.label(format!("{:.2}", settings.kv_cache_ratio));
+      ui.label(format!("{:.2}", settings.kv_cache_ratio));
     });
+
+    // KV 缓存空间计算按钮
+    let server_path_valid = settings.server_path
+        .file_name()
+        .and_then(|f| f.to_str())
+        .is_some_and(|name| name == "llama-server.exe");
+    let can_start = server_path_valid && !settings.model_path.as_os_str().is_empty();
+
+    let mut kv_result: Option<String> = None;
+    if ui.add_enabled(can_start, egui::Button::new(i18n::t(i18n::Key::BtnCalcKvCache, lang))).clicked() {
+        kv_result = match kv_cache::calc_and_format(settings) {
+            Ok(result) => Some(format!("{} {}", i18n::t(i18n::Key::LabelKvCacheResult, lang), result)),
+            Err(e) => Some(format!("⚠ {}", e)),
+        };
+    }
+    settings.kv_cache_result = kv_result;
+
+    if let Some(ref result) = settings.kv_cache_result {
+        ui.small(egui::RichText::new(result).weak());
+    }
 
     ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionSampling, lang));
@@ -124,31 +144,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         });
     });
 
-    ui.add_space(12.0);
+  ui.add_space(12.0);
     ui.heading(i18n::t(i18n::Key::SectionKvCache, lang));
     ui.separator();
-
-   // KV 缓存空间计算按钮
-    let server_path_valid = settings.server_path
-        .file_name()
-        .and_then(|f| f.to_str())
-        .is_some_and(|name| name == "llama-server.exe");
-    let can_start = server_path_valid && !settings.model_path.as_os_str().is_empty();
-
-    let mut kv_result: Option<String> = None;
-    if ui.add_enabled(can_start, egui::Button::new(i18n::t(i18n::Key::BtnCalcKvCache, lang))).clicked() {
-        kv_result = match kv_cache::calc_and_format(settings) {
-            Ok(result) => Some(format!("{} {}", i18n::t(i18n::Key::LabelKvCacheResult, lang), result)),
-            Err(e) => Some(format!("⚠ {}", e)),
-        };
-    }
-    settings.kv_cache_result = kv_result;
-
-    ui.horizontal(|ui| {
-        if let Some(ref result) = settings.kv_cache_result {
-            ui.small(egui::RichText::new(result).weak());
-        }
-    });
 
     // K/V 缓存卸载
     ui.horizontal(|ui| {
