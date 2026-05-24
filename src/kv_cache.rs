@@ -12,6 +12,8 @@ pub struct GgufInfo {
     pub kv_head_count: usize,
     /// 头维度 (head_dim.k / attention.head_dim)
     pub head_dim: usize,
+    /// Embedding 维度 ({arch}.embedding_length)
+    pub embedding_length: usize,
     /// 模型文件大小（字节）
     pub file_size: u64,
 }
@@ -71,10 +73,19 @@ pub fn read_gguf_info(file_path: &Path) -> Result<GgufInfo, String> {
         .ok_or_else(|| format!("无法从 GGUF 文件中读取头维度 (尝试了 {} / {})", head_dim_key, head_dim_fallback))?
         as usize;
 
+    // 读取 embedding length
+    let embed_len_key = format!("{}.embedding_length", arch);
+    let embedding_length = kv
+        .get(&embed_len_key)
+        .and_then(|v| v.as_u64())
+        .ok_or_else(|| format!("无法从 GGUF 文件中读取 Embedding 维度 ({})", embed_len_key))?
+        as usize;
+
     Ok(GgufInfo {
         block_count,
         kv_head_count,
         head_dim,
+        embedding_length,
         file_size,
     })
 }
