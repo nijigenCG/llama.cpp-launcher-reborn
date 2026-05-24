@@ -427,7 +427,7 @@ impl Key {
             // KV 计算按钮和结果标签
             (Key::BtnCalcKvCache, &Language::Zh) => "计算 KV 缓存可用空间",
             (Key::BtnCalcKvCache, &Language::En) => "Calculate KV Cache Space",
-            (Key::LabelKvCacheResult, &Language::Zh) => "缓存可用空间：",
+            (Key::LabelKvCacheResult, &Language::Zh) => "KV缓存可用空间：",
             (Key::LabelKvCacheResult, &Language::En) => "Available Cache:",
             (Key::CheckboxKvMlock, &Language::Zh) => "锁定内存",
             (Key::CheckboxKvMlock, &Language::En) => "Lock memory (mlock)",

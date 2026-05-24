@@ -74,11 +74,11 @@ pub fn read_gguf_info(file_path: &Path) -> Result<GgufInfo, String> {
         as usize;
 
     // 读取 embedding length
-    let embed_len_key = format!("{}.embedding_length", arch);
+    let emb_key = format!("{}.embedding_length", arch);
     let embedding_length = kv
-        .get(&embed_len_key)
+        .get(&emb_key)
         .and_then(|v| v.as_u64())
-        .ok_or_else(|| format!("无法从 GGUF 文件中读取 Embedding 维度 ({})", embed_len_key))?
+        .ok_or_else(|| format!("无法从 GGUF 文件中读取 Embedding 维度 ({})", emb_key))?
         as usize;
 
     Ok(GgufInfo {
@@ -166,12 +166,24 @@ fn regex_search_free_mib(line: &str) -> Option<u64> {
     None
 }
 
-/// 计算 KV 缓存所需空间（占位实现）
-pub fn calc_kv_cache_space(_gguf: &GgufInfo, free_mib: u64) -> String {
-    // TODO: 将来需要真正的 KV 缓存计算公式
-    // 公式参考: kv_cache_size = block_count * kv_head_count * head_dim * ctx_size * parallel_slots * type_size
-    // 当前仅返回空闲显存作为占位值
-    format!("{} MiB", free_mib)
+/// 计算 KV 缓存所需空间
+/// 公式: GPU可用显存 - (并发数量 × block_count × embedding_length × 最大物理批次大小 × 4字节/f32)
+pub fn calc_kv_cache_space(gguf: &GgufInfo, settings: &AppSettings, free_mib: u64) -> String {
+    // KV 缓存占用（字节）= parallel_slots * block_count * embedding_length * batch_size_actual * 4
+    let kv_cache_bytes = (settings.parallel_slots as u64)
+        .saturating_mul(gguf.block_count as u64)
+        .saturating_mul(gguf.embedding_length as u64)
+        .saturating_mul(settings.batch_size_actual() as u64)
+        .saturating_mul(4);
+
+    let kv_cache_mib = kv_cache_bytes / (1024 * 1024);
+
+    if kv_cache_mib > free_mib {
+        format!("{} MB / {} MB（超出 {} MB）", free_mib, kv_cache_mib, kv_cache_mib - free_mib)
+    } else {
+        let remaining = free_mib - kv_cache_mib;
+        format!("{} MB / {} MB（剩余 {} MB）", kv_cache_mib, free_mib, remaining)
+    }
 }
 
 /// Facade function：聚合读取 GGUF + GPU 信息 → 计算并格式化结果
@@ -182,15 +194,15 @@ pub fn calc_and_format(settings: &AppSettings) -> Result<String, String> {
 
     // 1. 读取 GGUF 模型信息
     let gguf = read_gguf_info(&settings.model_path)?;
-    log::info!("[calc_and_format] GGUF info: block_count={}, kv_head_count={}, head_dim={}, file_size={} bytes",
-        gguf.block_count, gguf.kv_head_count, gguf.head_dim, gguf.file_size);
+    log::info!("[calc_and_format] GGUF info: block_count={}, kv_head_count={}, head_dim={}, embedding_length={}, file_size={} bytes",
+        gguf.block_count, gguf.kv_head_count, gguf.head_dim, gguf.embedding_length, gguf.file_size);
 
     // 2. 获取空闲显存
     let free_mib = get_free_gpu_mib(&settings.server_path)?;
     log::info!("[calc_and_format] GPU 空闲显存: {} MiB", free_mib);
 
     // 3. 计算并格式化
-    let result = calc_kv_cache_space(&gguf, free_mib);
+    let result = calc_kv_cache_space(&gguf, settings, free_mib);
     log::info!("[calc_and_format] KV 缓存计算结果: {}", result);
     Ok(result)
 }
