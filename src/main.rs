@@ -9,12 +9,64 @@ pub mod shortcut;
 pub mod ui;
 mod spacing_debugger;
 
+use chrono::Local;
+use log::{LevelFilter, Log, Metadata, Record};
+use std::env;
+use std::fs::OpenOptions;
+use std::io::{BufWriter, Write};
+use std::path::PathBuf;
+use std::sync::Mutex;
+
+struct FileLogger {
+    writer: Mutex<BufWriter<std::fs::File>>,
+}
+
+impl Log for FileLogger {
+    fn enabled(&self, _metadata: &Metadata) -> bool { true }
+    fn log(&self, record: &Record) {
+        if self.enabled(record.metadata()) {
+            let mut w = self.writer.lock().unwrap();
+            writeln!(w, "[{}] {}", Local::now().format("%Y-%m-%d %H:%M:%S"), record.args()).ok();
+            w.flush().ok(); // 强制刷新，确保日志立即写入磁盘
+        }
+    }
+    fn flush(&self) {
+        self.writer.lock().unwrap().flush().ok();
+    }
+}
+
+fn init_logger() {
+    // 获取 exe 同级目录
+    let exe_path = env::current_exe().unwrap_or_default();
+    let exe_dir = exe_path.parent().map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
+    
+    // 生成带时间戳的日志文件名: llama_launcher_20260525_143000.log
+    let timestamp = Local::now().format("%Y%m%d_%H%M%S").to_string();
+    let log_path = exe_dir.join(format!("llama_launcher_{}.log", timestamp));
+
+    // 打开或创建日志文件（追加模式）
+    let file = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+        .expect("Failed to create log file");
+
+    let logger = FileLogger {
+        writer: Mutex::new(BufWriter::new(file)),
+    };
+
+    // 初始化日志系统
+    if log::set_boxed_logger(Box::new(logger)).is_ok() {
+        log::set_max_level(LevelFilter::Info);
+    }
+}
+
 use app::LlamaLauncherApp;
 use egui::{FontData, FontDefinitions, FontFamily};
 use std::sync::Arc;
 
 fn main() -> eframe::Result {
-    env_logger::init();
+    init_logger();
 
     // 使用统一的主窗口尺寸
     let default_size = egui::vec2(1250.0, 800.0);
