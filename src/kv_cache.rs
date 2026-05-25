@@ -53,14 +53,16 @@ pub fn read_gguf_info(file_path: &Path) -> Result<GgufInfo, String> {
             .and_then(|v| v.as_u64())
             .ok_or_else(|| format!("无法从 GGUF 文件中读取块数 ({})", block_key))? as usize;
 
-    // 读取 KV head count (fallback: attention.head_count)
+    // 读取 KV head count (fallback: attention.head_count_kv → Qwen, attention.head_count)
     let kv_head_key = format!("{}.attention.key_head_count", arch);
+    let kv_head_fallback_qwen = format!("{}.attention.head_count_kv", arch);
     let kv_head_fallback = format!("{}.attention.head_count", arch);
     let kv_head_count = kv
         .get(&kv_head_key)
+        .or_else(|| kv.get(&kv_head_fallback_qwen))
         .or_else(|| kv.get(&kv_head_fallback))
         .and_then(|v| v.as_u64())
-        .ok_or_else(|| format!("无法从 GGUF 文件中读取 KV 头数 (尝试了 {} / {})", kv_head_key, kv_head_fallback))?
+        .ok_or_else(|| format!("无法从 GGUF 文件中读取 KV 头数 (尝试了 {} / {} / {})", kv_head_key, kv_head_fallback_qwen, kv_head_fallback))?
         as usize;
 
     // 读取 head dim (fallback: attention.key_length)
