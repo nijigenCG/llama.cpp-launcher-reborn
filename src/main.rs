@@ -47,7 +47,7 @@ fn init_logger() {
     // 获取 exe 同级目录
     let exe_path = env::current_exe().unwrap_or_default();
     let exe_dir = exe_path.parent().map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
-    
+
     // 生成带时间戳的日志文件名: llama_launcher_20260525_143000.log
     let timestamp = Local::now().format("%Y%m%d_%H%M%S").to_string();
     let log_path = exe_dir.join(format!("llama_launcher_{}.log", timestamp));

@@ -106,7 +106,7 @@ impl LlamaLauncherApp {
         }
     }
 
-   fn render_rpc_controls(&mut self, ui: &mut egui::Ui) {
+    fn render_rpc_controls(&mut self, ui: &mut egui::Ui) {
         let rpc_state = self.rpc_manager.state();
         let rpc_start_fill = egui::Color32::from_rgb(40, 100, 140);
         let rpc_stop_fill = egui::Color32::from_rgb(180, 50, 50);
