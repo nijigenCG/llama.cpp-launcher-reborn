@@ -183,17 +183,17 @@ fn cache_type_precision_bytes(cache_type: &str) -> f64 {
 /// 计算最大可用上下文（k 为单位）
 ///
 /// 公式：
-///   Compute Buffer = parallel_slots × block_count × embedding_length × batch_size_actual × 4
+///   Compute Buffer = parallel_slots × block_count × embedding_length × batch_size_actual × 3 (f16=2B × 1.5x)
 ///   单 token KV 占用 = kv_head_count × head_dim × (precision_k + precision_v) × block_count
 ///   最大 token 数 = ((GPU 空闲显存 - 模型文件) - Compute Buffer) / 单 token KV 占用 × kv_cache_ratio
 ///   返回值 = 最大 token 数 / 1024 （单位 k）
 pub fn calc_max_context(gguf: &GgufInfo, settings: &AppSettings, free_mib: u64) -> u64 {
-    // Compute Buffer（字节）= parallel_slots * block_count * embedding_length * batch_size_actual × 4
+    // Compute Buffer（字节）= parallel_slots * block_count * embedding_length * batch_size_actual × 3 (f16=2B × 1.5x)
     let compute_buffer_bytes = (settings.parallel_slots as u64)
         .saturating_mul(gguf.block_count as u64)
         .saturating_mul(gguf.embedding_length as u64)
         .saturating_mul(settings.batch_size_actual() as u64)
-        .saturating_mul(4);
+        .saturating_mul(3);
 
     // 模型文件占用（MiB）
     let model_mib = gguf.file_size / (1024 * 1024);
@@ -232,14 +232,14 @@ pub fn calc_max_context(gguf: &GgufInfo, settings: &AppSettings, free_mib: u64) 
 }
 
 /// 计算 KV 缓存可用空间
-/// 公式: (GPU空闲显存 - 模型文件大小) - (并发数量 × block_count × embedding_length × 最大物理批次大小 × 2字节/f16 × 2缓冲倍率)
+/// 公式: (GPU空闲显存 - 模型文件大小) - (并发数量 × block_count × embedding_length × 最大物理批次大小 × 3 (f16=2B × 1.5x))
 pub fn calc_kv_cache_space(gguf: &GgufInfo, settings: &AppSettings, free_mib: u64) -> String {
-    // Compute Buffer（字节）= parallel_slots * block_count * embedding_length * batch_size_actual * 2(f16) * 2(缓冲倍率)
+    // Compute Buffer（字节）= parallel_slots * block_count * embedding_length * batch_size_actual × 3 (f16=2B × 1.5x)
     let compute_buffer_bytes = (settings.parallel_slots as u64)
         .saturating_mul(gguf.block_count as u64)
         .saturating_mul(gguf.embedding_length as u64)
         .saturating_mul(settings.batch_size_actual() as u64)
-        .saturating_mul(4);
+        .saturating_mul(3);
 
     // 模型文件占用（MiB）
     let model_mib = gguf.file_size / (1024 * 1024);
@@ -251,10 +251,11 @@ pub fn calc_kv_cache_space(gguf: &GgufInfo, settings: &AppSettings, free_mib: u6
     let compute_buffer_mib = compute_buffer_bytes / (1024 * 1024);
 
     if compute_buffer_mib > usable_mib {
-        format!("{} MB / {} MB（超出 {} MB）", usable_mib, compute_buffer_mib, compute_buffer_mib - usable_mib)
+        let over = compute_buffer_mib - usable_mib;
+        format!("超出 {} MB", over)
     } else {
         let remaining = usable_mib - compute_buffer_mib;
-        format!("{} MB / {} MB（剩余 {} MB）", compute_buffer_mib, usable_mib, remaining)
+        format!("{} MB", remaining)
     }
 }
 
