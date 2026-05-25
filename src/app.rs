@@ -53,7 +53,7 @@ impl LlamaLauncherApp {
             settings_manager,
             server_manager,
             rpc_manager,
-            tab_selected: "server".to_string(),
+            tab_selected: i18n::t(i18n::Key::TabServer, &lang).to_string(),
             show_about: false,
             lang,
             auto_start_server_on_first_frame,
@@ -330,7 +330,7 @@ impl eframe::App for LlamaLauncherApp {
                         }
                     }
 
-                    _ => { ui.label(i18n::t(i18n::Key::GenericSelectModule, &self.lang)); }
+                    _ => { /* 空白面板 */ }
                 }
             });
         });

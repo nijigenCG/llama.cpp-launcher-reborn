@@ -190,9 +190,6 @@ pub enum Key {
     MenuItemLogToFile,
     MenuItemDebugMode,
 
-    // 通用
-    GenericSelectModule,
-
     // Server 面板 - 版本
     BtnCheckVersion,
 }
@@ -532,9 +529,6 @@ impl Key {
             (Key::AboutCopyright, &Language::Zh) => "© yihuishou. All rights reserved.",
             (Key::AboutCopyright, &Language::En) => "© yihuishou. All rights reserved.",
 
-            // 通用
-            (Key::GenericSelectModule, &Language::Zh) => "请选择一个功能模块",
-            (Key::GenericSelectModule, &Language::En) => "Please select a module",
 
             // Server 面板 - 版本
             (Key::BtnCheckVersion, &Language::Zh) => "查看 llama.cpp 版本",
