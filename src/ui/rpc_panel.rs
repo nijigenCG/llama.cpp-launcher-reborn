@@ -1,7 +1,12 @@
 use crate::config::settings::{AppSettings, SettingsManager};
 use crate::i18n;
 
-pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &SettingsManager, lang: &i18n::Language) {
+pub fn ui(
+    ui: &mut egui::Ui,
+    settings: &mut AppSettings,
+    settings_manager: &SettingsManager,
+    lang: &i18n::Language,
+) {
     ui.heading(i18n::t(i18n::Key::PanelRpcTitle, lang));
     ui.separator();
 
@@ -31,8 +36,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         settings.rpc_server_path = std::path::PathBuf::from(&rpc_path_str);
     }
 
-    ui.add_space(8.0);
-
     // 监听地址
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelHost, lang));
@@ -41,21 +44,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         ui.add(egui::DragValue::new(&mut settings.rpc_port).range(1..=65535));
     });
 
-    ui.add_space(4.0);
-
     // 快捷按钮
     ui.horizontal(|ui| {
-        if ui.small_button(i18n::t(i18n::Key::BtnHostLocal, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnHostLocal, lang))
+            .clicked()
+        {
             settings.rpc_host = "127.0.0.1".to_string();
         }
-        if ui.small_button(i18n::t(i18n::Key::BtnHostAny, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnHostAny, lang))
+            .clicked()
+        {
             settings.rpc_host = "0.0.0.0".to_string();
         }
     });
-
-    ui.add_space(8.0);
-
-    ui.add_space(8.0);
 
     // 线程数
     ui.horizontal(|ui| {
@@ -73,6 +76,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
 
     // 本地缓存
     ui.horizontal(|ui| {
-        ui.checkbox(&mut settings.rpc_cache, i18n::t(i18n::Key::CheckboxRpcCache, lang));
+        ui.checkbox(
+            &mut settings.rpc_cache,
+            i18n::t(i18n::Key::CheckboxRpcCache, lang),
+        );
     });
 }

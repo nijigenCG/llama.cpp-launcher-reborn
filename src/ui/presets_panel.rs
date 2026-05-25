@@ -141,7 +141,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         }
 
         // 导出参数预设按钮（仅导出参数面板相关字段）
-        if ui.small_button(i18n::t(i18n::Key::BtnExportParams, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnExportParams, lang))
+            .clicked()
+        {
             let params = ParamsExport::from_settings(settings);
             let json = match serde_json::to_string_pretty(&params) {
                 Ok(v) => v,
@@ -164,7 +167,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         }
 
         // 导入参数预设按钮（立即应用到参数面板）
-        if ui.small_button(i18n::t(i18n::Key::BtnImportParams, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnImportParams, lang))
+            .clicked()
+        {
             if let Some(path) = rfd::FileDialog::new()
                 .add_filter("JSON", &["json"])
                 .pick_file()
@@ -190,7 +196,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         }
     });
 
-    ui.add_space(8.0);
     ui.separator();
 
     // 预设列表
@@ -208,20 +213,33 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             for (i, preset) in settings.presets.iter().enumerate() {
                 ui.horizontal(|ui| {
                     // 预设名称（可点击加载）
-                    if ui.selectable_label(false, format!("📦 {}", preset.name)).clicked() {
+                    if ui
+                        .selectable_label(false, format!("📦 {}", preset.name))
+                        .clicked()
+                    {
                         load_index = Some(i);
                     }
 
                     // 应用按钮 - 加载配置到表单，不自动启动服务
-                    if ui.small_button(i18n::t(i18n::Key::BtnApplyPreset, lang)).clicked() {
+                    if ui
+                        .small_button(i18n::t(i18n::Key::BtnApplyPreset, lang))
+                        .clicked()
+                    {
                         load_index = Some(i);
                     }
 
                     // 自启动预设勾选框（单选）
-                    let mut is_auto = settings.auto_start_preset_name
+                    let mut is_auto = settings
+                        .auto_start_preset_name
                         .as_ref()
                         .is_some_and(|name| *name == preset.name);
-                    if ui.checkbox(&mut is_auto, i18n::t(i18n::Key::CheckboxAutoStartPreset, lang)).changed() {
+                    if ui
+                        .checkbox(
+                            &mut is_auto,
+                            i18n::t(i18n::Key::CheckboxAutoStartPreset, lang),
+                        )
+                        .changed()
+                    {
                         if is_auto {
                             auto_start_preset = Some(preset.name.clone());
                         } else if settings.auto_start_preset_name.as_ref() == Some(&preset.name) {
@@ -231,13 +249,19 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                     }
 
                     // 重命名按钮 - 使用 settings 持久化状态
-                    if ui.small_button(i18n::t(i18n::Key::BtnRenamePreset, lang)).clicked() {
+                    if ui
+                        .small_button(i18n::t(i18n::Key::BtnRenamePreset, lang))
+                        .clicked()
+                    {
                         settings.rename_preset_index = Some(i);
                         settings.rename_preset_new_name = preset.name.clone();
                     }
 
                     // 删除按钮
-                    if ui.small_button(i18n::t(i18n::Key::BtnDeletePreset, lang)).clicked() {
+                    if ui
+                        .small_button(i18n::t(i18n::Key::BtnDeletePreset, lang))
+                        .clicked()
+                    {
                         delete_index = Some(i);
                     }
                 });
@@ -258,10 +282,13 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             }
 
             // 检查是否需要启动 Server
-            should_start_server = load_index.map(|idx|
-                idx < settings.presets.len()
-                    && settings.auto_start_preset_name.as_ref() == Some(&settings.presets[idx].name)
-            ).unwrap_or(false);
+            should_start_server = load_index
+                .map(|idx| {
+                    idx < settings.presets.len()
+                        && settings.auto_start_preset_name.as_ref()
+                            == Some(&settings.presets[idx].name)
+                })
+                .unwrap_or(false);
 
             // 执行删除
             if let Some(idx) = delete_index {
@@ -290,7 +317,8 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                             ui.text_edit_singleline(&mut settings.rename_preset_new_name);
                             ui.horizontal(|ui| {
                                 if ui.button("确认").clicked() {
-                                    let trimmed = settings.rename_preset_new_name.trim().to_string();
+                                    let trimmed =
+                                        settings.rename_preset_new_name.trim().to_string();
                                     if !trimmed.is_empty() {
                                         settings.presets[idx].name = trimmed;
                                     }

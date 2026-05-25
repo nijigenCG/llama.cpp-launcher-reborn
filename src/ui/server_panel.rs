@@ -3,7 +3,12 @@ use crate::i18n;
 #[cfg(target_os = "windows")]
 use std::os::windows::process::CommandExt;
 
-pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &SettingsManager, lang: &i18n::Language) {
+pub fn ui(
+    ui: &mut egui::Ui,
+    settings: &mut AppSettings,
+    settings_manager: &SettingsManager,
+    lang: &i18n::Language,
+) {
     ui.heading(i18n::t(i18n::Key::PanelServerTitle, lang));
     ui.separator();
 
@@ -28,17 +33,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         }
 
         // 查看 llama.cpp 版本按钮（与自动检测同排）
-        let server_path_valid = settings.server_path
+        let server_path_valid = settings
+            .server_path
             .file_name()
             .and_then(|f| f.to_str())
             .is_some_and(|name| name == "llama-server.exe")
             && settings.server_path.exists();
 
         if server_path_valid {
-            if ui.add_enabled(
-                true,
-                egui::Button::new(i18n::t(i18n::Key::BtnCheckVersion, lang)),
-            ).clicked() {
+            if ui
+                .add_enabled(
+                    true,
+                    egui::Button::new(i18n::t(i18n::Key::BtnCheckVersion, lang)),
+                )
+                .clicked()
+            {
                 // 使用 CREATE_NO_WINDOW 防止弹出命令行窗口（Windows）
                 let mut cmd = std::process::Command::new(&settings.server_path);
                 cmd.arg("--version")
@@ -46,8 +55,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
                     .stderr(std::process::Stdio::piped());
                 #[cfg(target_os = "windows")]
                 cmd.creation_flags(0x0800_0000u32); // CREATE_NO_WINDOW
-                match cmd.output()
-                {
+                match cmd.output() {
                     Ok(output) => {
                         let stdout = String::from_utf8_lossy(&output.stdout);
                         let stderr = String::from_utf8_lossy(&output.stderr);
@@ -80,8 +88,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         settings.server_path = std::path::PathBuf::from(&server_path_str);
     }
 
-    ui.add_space(8.0);
-
     // 监听地址
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelHost, lang));
@@ -90,19 +96,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         ui.add(egui::DragValue::new(&mut settings.port).range(1..=65535));
     });
 
-    ui.add_space(8.0);
-
     // 快捷按钮
     ui.horizontal(|ui| {
-        if ui.small_button(i18n::t(i18n::Key::BtnHostLocal, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnHostLocal, lang))
+            .clicked()
+        {
             settings.host = "127.0.0.1".to_string();
         }
-        if ui.small_button(i18n::t(i18n::Key::BtnHostAny, lang)).clicked() {
+        if ui
+            .small_button(i18n::t(i18n::Key::BtnHostAny, lang))
+            .clicked()
+        {
             settings.host = "0.0.0.0".to_string();
         }
     });
-
-    ui.add_space(8.0);
 
     // 并行槽位
     ui.horizontal(|ui| {
@@ -111,13 +119,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
     });
 
     // 功能开关（统一紧凑排列）
-    ui.checkbox(&mut settings.verbose, i18n::t(i18n::Key::CheckboxVerbose, lang));
+    ui.checkbox(
+        &mut settings.verbose,
+        i18n::t(i18n::Key::CheckboxVerbose, lang),
+    );
 
     // 离线模式勾选框
-    ui.checkbox(&mut settings.offline_mode, i18n::t(i18n::Key::CheckboxOfflineMode, lang));
+    ui.checkbox(
+        &mut settings.offline_mode,
+        i18n::t(i18n::Key::CheckboxOfflineMode, lang),
+    );
 
-    ui.add_space(2.0);
-    ui.checkbox(&mut settings.rpc_mode, i18n::t(i18n::Key::CheckboxRpcMode, lang));
+    ui.checkbox(
+        &mut settings.rpc_mode,
+        i18n::t(i18n::Key::CheckboxRpcMode, lang),
+    );
     if settings.rpc_mode {
         ui.indent("rpc_endpoints", |ui| {
             ui.horizontal(|ui| {
@@ -128,6 +144,8 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, settings_manager: &Sett
         });
     }
 
-    // ui.add_space(2.0);
-    ui.checkbox(&mut settings.web_ui_enabled, i18n::t(i18n::Key::CheckboxEnableWebClient, lang));
+    ui.checkbox(
+        &mut settings.web_ui_enabled,
+        i18n::t(i18n::Key::CheckboxEnableWebClient, lang),
+    );
 }
