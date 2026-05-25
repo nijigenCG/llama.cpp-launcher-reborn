@@ -98,14 +98,18 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 温度
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelTemperature, lang));
-        ui.add(egui::Slider::new(&mut settings.temperature, 0.0..=2.0).smallest_positive(0.01));
+        ui.add(egui::Slider::new(&mut settings.temperature, 0.0..=2.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.temperature));
     });
 
     // top_p
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelTopP, lang));
-        ui.add(egui::Slider::new(&mut settings.top_p, 0.0..=1.0).smallest_positive(0.01));
+        ui.add(egui::Slider::new(&mut settings.top_p, 0.0..=1.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.top_p));
     });
 
@@ -118,16 +122,18 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 重复惩罚
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelRepeatPenalty, lang));
-        ui.add(egui::Slider::new(&mut settings.repeat_penalty, 0.0..=2.0).smallest_positive(0.01));
+        ui.add(egui::Slider::new(&mut settings.repeat_penalty, 0.0..=2.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.repeat_penalty));
     });
 
     // 存在惩罚
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelPresencePenalty, lang));
-        ui.add(
-            egui::Slider::new(&mut settings.presence_penalty, -2.0..=2.0).smallest_positive(0.01),
-        );
+        ui.add(egui::Slider::new(&mut settings.presence_penalty, -2.0..=2.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.presence_penalty));
     });
 
@@ -338,18 +344,18 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     // 信任度 --spec-draft-p-min（Slider）
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::SpecDraftPMinLabel, lang));
-        ui.add(
-            egui::Slider::new(&mut settings.spec_draft_p_min, 0.0..=1.0).smallest_positive(0.01),
-        );
+        ui.add(egui::Slider::new(&mut settings.spec_draft_p_min, 0.0..=1.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.spec_draft_p_min));
     });
 
     // 分裂概率 --spec-draft-p-split（Slider）
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::SpecDraftPSplitLabel, lang));
-        ui.add(
-            egui::Slider::new(&mut settings.spec_draft_p_split, 0.0..=1.0).smallest_positive(0.01),
-        );
+        ui.add(egui::Slider::new(&mut settings.spec_draft_p_split, 0.0..=1.0)
+            .smallest_positive(0.01)
+            .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.spec_draft_p_split));
     });
 }
