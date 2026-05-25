@@ -69,6 +69,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
                                     egui::Frame::default()
                                         .fill(egui::Color32::from_rgb(80, 80, 80))
                                         .inner_margin(egui::Margin::same(4))
+                                        .corner_radius(8.0)
                                         .show(ui, |ui| {
                                             ui.colored_label(egui::Color32::YELLOW, &text);
                                         });
