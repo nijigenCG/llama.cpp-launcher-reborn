@@ -58,7 +58,7 @@ impl LlamaLauncherApp {
             lang,
             auto_start_server_on_first_frame,
             debug_mode: false,
-            spacing_debugger: SpacingDebugger::default(),
+            spacing_debugger: SpacingDebugger::new(),
         }
     }
 

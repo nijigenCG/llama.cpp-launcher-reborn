@@ -47,6 +47,25 @@ root/
 | SettingsManager | impl | config/settings.rs | load/save + auto_detect_server_path/rpc |
 | ServerManager | struct+impl | engine/server.rs | llama-server 生命周期、日志、launch_command |
 | RpcManager | struct+impl | engine/rpc.rs | rpc-server 生命周期、连接状态 |
+| parse_tags | fn | ui/model_panel.rs | 文件名→9色彩色标签（参数量/量化/版本/训练方法/精度/LoRA/上下文长度/架构/模型名） |
+| is_param_size, is_training_method, is_context_length | fn | ui/model_panel.rs | 标签分类判定辅助函数 |
+| render_file_list | fn | ui/model_panel.rs | 按 FileMode(Main/Mmproj/Dflash) 过滤并渲染文件列表 |
+| auto_detect_model_dir | fn | ui/model_panel.rs | 自动检测 model/models 目录（不区分大小写） |
+
+## 模型标签系统（9 色方案）
+`parse_tags()` 将文件名按 `-` 分段后匹配规则着色，渲染为圆角按钮：
+
+| 颜色 | RGB | 分类 | 判定函数/关键词 | 示例 |
+|------|-----|------|----------------|------|
+| 🟣 紫色 | (180,120,255) | 参数量 | `is_param_size` — 含数字+以 b/m 结尾 | `7b`, `335m` |
+| 🟠 橙色 | (255,165,0) | 量化类型 | starts_with('q') | `q4_k_m`, `q8_0` |
+| ⚫ 灰色 | (160,160,160) | 版本号 | 纯数字/小数 | `3.1`, `2` |
+| 🟢 绿色 | (100,200,100) | 训练方法 | `is_training_method` — instruct/chat/sft/rlhf/dpo/orpo/grpo | `Instruct` |
+| 🟡 **黄色** | (255,215,0) | **精度** | fp16/bf16/f32/fp8 | `FP16` |
+| 🩷 **粉色** | (255,100,130) | **LoRA/Adapter** | lora/adapter/delta | `LoRA`, `delta` |
+| 🟤 **棕色** | (205,133,63) | **上下文长度** | `is_context_length` — 以 k 结尾+含数字 / long / 128/64/32 | `128k`, `c4k` |
+| 🩵 **青色** | (0,210,210) | **架构类型** | mamba/rwkv/hyena/decoder | `RWKV`, `mamba` |
+| 🔵 蓝色 | (100,150,255) | 模型名称 | 兜底（不匹配以上任何规则） | `Qwen`, `Llama` |
 
 ## 启动流程 (高层)
 1. main: 加载CJK字体, set_zoom_factor(1.5), 创建 eframe。

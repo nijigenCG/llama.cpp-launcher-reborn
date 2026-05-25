@@ -38,17 +38,23 @@ fn auto_detect_model_dir() -> Option<std::path::PathBuf> {
     None
 }
 
-/// 文件名解析为彩色标签
+/// 文件名解析为彩色标签（9 色方案）
 fn parse_tags(filename: &str) -> Vec<(String, egui::Color32)> {
     let stem = filename
         .strip_suffix(".gguf")
         .unwrap_or(filename);
 
-    let purple = egui::Color32::from_rgb(180, 120, 255);
-    let orange = egui::Color32::from_rgb(255, 165, 0);
-    let gray = egui::Color32::from_rgb(160, 160, 160);
-    let green = egui::Color32::from_rgb(100, 200, 100);
-    let blue = egui::Color32::from_rgb(100, 150, 255);
+    // 原有 5 色
+    let purple = egui::Color32::from_rgb(180, 120, 255);   // 参数量
+    let orange = egui::Color32::from_rgb(255, 165, 0);     // 量化类型
+    let gray = egui::Color32::from_rgb(160, 160, 160);     // 版本号
+    let green = egui::Color32::from_rgb(100, 200, 100);    // 训练方法
+    let blue = egui::Color32::from_rgb(100, 150, 255);     // 模型名称 (兜底)
+    // 新增 4 色
+    let yellow = egui::Color32::from_rgb(255, 215, 0);     // 精度
+    let pink = egui::Color32::from_rgb(255, 100, 130);     // LoRA/Adapter
+    let brown = egui::Color32::from_rgb(205, 133, 63);     // 上下文长度
+    let cyan = egui::Color32::from_rgb(0, 210, 210);       // 架构类型
 
     let mut tags = Vec::new();
     for part in stem.split('-') {
@@ -58,27 +64,38 @@ fn parse_tags(filename: &str) -> Vec<(String, egui::Color32)> {
         }
 
         let lower = trimmed.to_lowercase();
-        let color = if lower.matches(|c: char| c.is_ascii_digit()).count() > 0
-            && (lower.ends_with('b') || lower.ends_with('m') || lower.ends_with('k'))
-        {
+        let color = if is_param_size(&lower) {
+            // 🟣 参数量: 7b, 335m, 1.5b
             purple
         } else if lower.starts_with('q') {
+            // 🟠 量化类型: q4_k_m, q8_0
             orange
-        } else if trimmed
-            .chars()
-            .all(|c| c.is_ascii_digit() || c == '.')
-        {
+        } else if trimmed.chars().all(|c| c.is_ascii_digit() || c == '.') {
+            // ⚫ 版本号: 3.1, 2
             gray
-        } else if lower.contains("instruct")
-            || lower.contains("chat")
-            || lower.contains("sft")
-            || lower.contains("rlhf")
-            || lower.contains("dpo")
-            || lower.contains("orpo")
-            || lower.contains("grpo")
-        {
+        } else if is_training_method(&lower) {
+            // 🟢 训练方法: instruct/chat/sft/rlhf/dpo/orpo/grpo
             green
+        } else if lower.contains("fp16") || lower.contains("bf16")
+            || lower.contains("f32") || lower.contains("fp8")
+        {
+            // 🟡 精度: fp16, bf16, f32, fp8
+            yellow
+        } else if lower.contains("lora") || lower.contains("adapter")
+            || lower.contains("delta")
+        {
+            // 🩷 LoRA/Adapter/Delta
+            pink
+        } else if is_context_length(&lower) {
+            // 🟤 上下文长度: 128k, c4k, long
+            brown
+        } else if lower.contains("mamba") || lower.contains("rwkv")
+            || lower.contains("hyena") || lower.contains("decoder")
+        {
+            // 🩵 架构类型: mamba, rwkv, hyena, decoder
+            cyan
         } else {
+            // 🔵 模型名称 (兜底)
             blue
         };
 
@@ -86,6 +103,27 @@ fn parse_tags(filename: &str) -> Vec<(String, egui::Color32)> {
     }
 
     tags
+}
+
+/// 参数量: 包含数字且以 b/m 结尾（k 留给上下文长度）
+fn is_param_size(s: &str) -> bool {
+    let has_digit = s.chars().any(|c| c.is_ascii_digit());
+    has_digit && (s.ends_with('b') || s.ends_with('m'))
+}
+
+/// 训练方法关键词
+fn is_training_method(s: &str) -> bool {
+    s.contains("instruct") || s.contains("chat") || s.contains("sft")
+        || s.contains("rlhf") || s.contains("dpo") || s.contains("orpo")
+        || s.contains("grpo")
+}
+
+/// 上下文长度: 含 "128"/"64k"/"32k"/"c4k"/"long" 等模式
+fn is_context_length(s: &str) -> bool {
+    if s.ends_with('k') && s.contains(|c: char| c.is_ascii_digit()) {
+        return true; // 128k, c4k, 4k, 32k...
+    }
+    s.contains("long") || s == "128" || s == "64" || s == "32"
 }
 
 /// 判断是否为 mmproj 文件
