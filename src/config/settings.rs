@@ -722,3 +722,21 @@ impl SettingsManager {
         self.find_exe_recursive(&self.config_dir, "rpc-server", "llama")
     }
 }
+
+/// 判断文件名是否为 llama-server 可执行文件（跨平台）
+pub fn is_server_binary_name(name: &str) -> bool {
+    if cfg!(target_os = "windows") {
+        name == "llama-server.exe"
+    } else {
+        name == "llama-server"
+    }
+}
+
+/// 判断文件名是否为 rpc-server 可执行文件（跨平台）
+pub fn is_rpc_binary_name(name: &str) -> bool {
+    if cfg!(target_os = "windows") {
+        name == "rpc-server.exe"
+    } else {
+        name == "rpc-server"
+    }
+}
