@@ -12,13 +12,19 @@ rfd = "0.14"
 log = "0.4"
 chrono = "0.4"
 sys-locale = "0.3.2"
-shortcuts-rs = "1.1.1"
 
 dirs = "5.0"
 
 gguf-rs = "0.1.7"
 
 egui-toast = "0.20"
+
+[target.'cfg(windows)'.dependencies]
+shortcuts-rs = "1.1.1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Linux 需要 x11 后端支持 winit/eframe
+eframe = { version = "0.34", default-features = false, features = ["glow", "default_fonts", "x11"] }
 
 [build-dependencies]
 winres = "0.1.12"
