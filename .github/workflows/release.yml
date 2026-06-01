@@ -44,15 +44,91 @@ jobs:
           name: llama-cpp-launcher-windows
           path: dist/
 
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            arch: x86_64
+          - target: aarch64-unknown-linux-gnu
+            arch: aarch64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross-compilation tools (aarch64)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Configure cargo for cross-compilation
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          mkdir -p .cargo
+          cat >> .cargo/config.toml << 'EOF'
+          [target.aarch64-unknown-linux-gnu]
+          linker = "aarch64-linux-gnu-gcc"
+          EOF
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Prepare artifacts
+        run: |
+          # 从 Cargo.toml 读取版本号
+          VERSION=$(grep -oP 'version\s*=\s*"\K[^"]+' Cargo.toml)
+          echo "检测到版本号: $VERSION"
+
+          mkdir -p dist
+
+          BINARY_NAME="llama_cpp_launcher_v${VERSION}_linux_${{ matrix.arch }}"
+
+          # 复制并重命名
+          cp "target/${{ matrix.target }}/release/llama_cpp_launcher" "dist/${BINARY_NAME}"
+
+          # 创建 tar.gz
+          cd dist
+          tar czf "${BINARY_NAME}.tar.gz" "${BINARY_NAME}"
+          rm "${BINARY_NAME}"
+
+          echo "已创建: ${BINARY_NAME}.tar.gz"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: llama-cpp-launcher-linux-${{ matrix.arch }}
+          path: dist/
+
   release:
-    needs: build-windows
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact
+      - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
           name: llama-cpp-launcher-windows
           path: dist/
+
+      - name: Download Linux x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llama-cpp-launcher-linux-x86_64
+          path: dist/
+
+      - name: Download Linux aarch64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: llama-cpp-launcher-linux-aarch64
+          path: dist/
+
+      - name: List artifacts
+        run: ls -la dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
