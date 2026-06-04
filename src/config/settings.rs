@@ -104,10 +104,10 @@ fn default_log_to_file() -> bool {
     false
 }
 
-// n_ctx / batch_size / ubatch_size 以 k 为单位存储 (1k = 1024)
+// context / batch_size / ubatch_size 以 k 为单位存储 (1k = 1024)
 // 反序列化时兼容旧版原始值（如 4096 → 自动转为 4）
 
-fn default_n_ctx() -> usize {
+fn default_context() -> usize {
     4 // 4k = 4096
 }
 
@@ -128,7 +128,7 @@ fn from_raw_or_k(v: usize) -> usize {
     }
 }
 
-mod deserialize_n_ctx {
+mod deserialize_context {
     use super::from_raw_or_k;
     use serde::{self, Deserialize};
 
@@ -210,10 +210,10 @@ pub struct Preset {
     pub parallel_slots: usize,
     // 推理参数（以 k 为单位存储，1k = 1024）
     #[serde(
-        default = "default_n_ctx",
-        deserialize_with = "deserialize_n_ctx::deserialize"
+        default = "default_context",
+        deserialize_with = "deserialize_context::deserialize"
     )]
-    pub n_ctx: usize, // --ctx-size (k)
+    pub context: usize, // --ctx-size (k)
     #[serde(
         default = "default_batch_size",
         deserialize_with = "deserialize_batch_size::deserialize"
@@ -288,7 +288,7 @@ impl Default for Preset {
             host: "127.0.0.1".to_string(),
             port: 8080,
             parallel_slots: 1,
-            n_ctx: 4,         // 4k = 4096
+            context: 4,         // 4k = 4096
             batch_size: 2,    // 2k = 2048
             ubatch_size: 0.5, // 0.5k = 512
             temperature: 0.8,
@@ -334,7 +334,7 @@ impl Preset {
             host: settings.host.clone(),
             port: settings.port,
             parallel_slots: settings.parallel_slots,
-            n_ctx: settings.n_ctx,
+            context: settings.context,
             batch_size: settings.batch_size,
             ubatch_size: settings.ubatch_size,
             temperature: settings.temperature,
@@ -376,7 +376,7 @@ impl Preset {
         settings.host = self.host;
         settings.port = self.port;
         settings.parallel_slots = self.parallel_slots;
-        settings.n_ctx = self.n_ctx;
+        settings.context = self.context;
         settings.batch_size = self.batch_size;
         settings.ubatch_size = self.ubatch_size;
         settings.temperature = self.temperature;
@@ -432,10 +432,10 @@ pub struct AppSettings {
 
     // 推理参数（以 k 为单位存储，1k = 1024）
     #[serde(
-        default = "default_n_ctx",
-        deserialize_with = "deserialize_n_ctx::deserialize"
+        default = "default_context",
+        deserialize_with = "deserialize_context::deserialize"
     )]
-    pub n_ctx: usize, // --ctx-size (k)
+    pub context: usize, // --ctx-size (k)
     #[serde(
         default = "default_batch_size",
         deserialize_with = "deserialize_batch_size::deserialize"
@@ -565,7 +565,7 @@ impl Default for AppSettings {
             mmproj_path: PathBuf::new(),
             dflash_path: PathBuf::new(),
             model_dir: PathBuf::new(),
-            n_ctx: 4,         // 4k = 4096
+            context: 4,         // 4k = 4096
             batch_size: 2,    // 2k = 2048
             ubatch_size: 0.5, // 0.5k = 512
             temperature: 0.8,
@@ -622,8 +622,8 @@ impl Default for AppSettings {
 
 impl AppSettings {
     /// k 值 → 实际参数值 (value * 1024)
-    pub fn n_ctx_actual(&self) -> usize {
-        self.n_ctx * 1024
+    pub fn context_actual(&self) -> usize {
+        self.context * 1024
     }
     pub fn batch_size_actual(&self) -> usize {
         self.batch_size * 1024

@@ -214,7 +214,7 @@ impl ServerManager {
         cmd.arg("--model").arg(&model_path)
             .arg("--host").arg(&settings.host)
             .arg("--port").arg(settings.port.to_string())
-            .arg("--ctx-size").arg(settings.n_ctx_actual().to_string())
+            .arg("--ctx-size").arg(settings.context_actual().to_string())
             .arg("--parallel").arg(settings.parallel_slots.to_string())
             .arg("--batch-size").arg(settings.batch_size_actual().to_string())
             .arg("--ubatch-size").arg(settings.ubatch_size_actual().to_string())
