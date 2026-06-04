@@ -106,6 +106,9 @@ use std::sync::Arc;
 fn main() -> eframe::Result {
     init_logger();
 
+    // 检测命令行参数是否包含 --minimized（开机自启时使用）
+    let start_minimized = env::args().any(|arg| arg == "--minimized");
+
     // 使用统一的主窗口尺寸
     let default_size = egui::vec2(1250.0, 800.0);
 
@@ -121,13 +124,13 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "llama.cpp launcher",
         options,
-        Box::new(|cc| {
+        Box::new(move |cc| {
             // 配置 CJK 中文字体，解决中文乱码问题
             let mut fonts = FontDefinitions::default();
             load_cjk_fonts(&mut fonts);
             cc.egui_ctx.set_fonts(fonts);
 
-            Ok(Box::new(LlamaLauncherApp::new(&cc)))
+            Ok(Box::new(LlamaLauncherApp::new(&cc, start_minimized)))
         }),
     )
 }

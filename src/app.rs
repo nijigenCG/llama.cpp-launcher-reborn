@@ -14,12 +14,13 @@ pub struct LlamaLauncherApp {
     show_about: bool,
     lang: Language,
     auto_start_server_on_first_frame: bool,  // 新增
+    start_minimized: bool,                    // 开机自启时最小化到任务栏
     debug_mode: bool,                         // egui Inspector / 调试模式开关
     spacing_debugger: SpacingDebugger,        // UI 间距可视化工具
 }
 
 impl LlamaLauncherApp {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(cc: &eframe::CreationContext<'_>, start_minimized: bool) -> Self {
         let settings_manager = SettingsManager::new();
         let mut settings = settings_manager.load().unwrap_or_default();
 
@@ -57,6 +58,7 @@ impl LlamaLauncherApp {
             show_about: false,
             lang,
             auto_start_server_on_first_frame,
+            start_minimized,
             debug_mode: false,
             spacing_debugger: SpacingDebugger::new(),
         }
@@ -192,6 +194,12 @@ impl eframe::App for LlamaLauncherApp {
         if self.auto_start_server_on_first_frame {
             self.auto_start_server_on_first_frame = false;
             self.server_manager.start(&self.settings);
+        }
+
+        // 开机自启时最小化到任务栏（仅第一帧执行）
+        if self.start_minimized {
+            self.start_minimized = false;
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::Visible(false));
         }
 
         self.server_manager.poll_logs();
@@ -360,6 +368,7 @@ fn enable_auto_start() {
     };
 
     // reg add 标准语法：reg add <Key> /v <ValueName> /d <Data> /f
+    // 添加 --minimized 参数，使开机自启时程序启动后最小化到任务栏
     let path_str = exe_path.to_string_lossy().to_string();
     match std::process::Command::new("reg")
         .arg("add")
@@ -367,7 +376,7 @@ fn enable_auto_start() {
         .arg("/v")
         .arg("llama.cpp launcher")
         .arg("/d")
-        .arg(format!("\"{}\"", path_str))
+        .arg(format!("\"{}\" --minimized", path_str))
         .arg("/f")
         .output()
     {
@@ -430,11 +439,12 @@ fn enable_auto_start() {
     };
 
     // 创建 .desktop 文件内容
+    // 添加 --minimized 参数，使开机自启时程序启动后最小化到任务栏
     let desktop_content = format!(
         r#"[Desktop Entry]
 Type=Application
 Name=LLama Launcher
-Exec={}
+Exec={} --minimized
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
