@@ -1,6 +1,7 @@
-use crate::config::settings::{AppSettings, GpuLayersMode, is_server_binary_name};
+use crate::config::settings::{is_server_binary_name, AppSettings, GpuLayersMode};
 use crate::i18n;
 use crate::kv_cache;
+use crate::ui::helper;
 
 pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) {
     ui.heading(i18n::t(i18n::Key::PanelParamsTitle, lang));
@@ -23,6 +24,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         );
         ui.label("k");
         ui.small(i18n::t(i18n::Key::HintKUnit, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpNCtx, lang));
     });
     if ui.add_enabled(can_start, egui::Button::new(i18n::t(i18n::Key::BtnSetMaxContextVram, lang))).clicked() {
         match kv_cache::calc_max_context_facade(settings) {
@@ -41,6 +43,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ); // 1k ~ 16k
         ui.label("k");
         ui.small(i18n::t(i18n::Key::HintKUnit, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpBatchSize, lang));
     });
 
     // 最大物理批次大小 (--ubatch-size) (k)
@@ -53,6 +56,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ); // 0.5k ~ 16k, 步进 0.5
         ui.label("k");
         ui.small(i18n::t(i18n::Key::HintKUnit, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpUBatchSize, lang));
     });
 
     // 会话超时设置 (--timeout) (秒)
@@ -64,6 +68,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 .speed(10),
         ); // 60~3600秒，步进10
         ui.label(i18n::t(i18n::Key::HintSUnit, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSessionTimeout, lang));
     });
 
     // KV 缓存比例（DragValue）
@@ -75,6 +80,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 .speed(0.01),
         );
         ui.label(format!("{:.2}", settings.kv_cache_ratio));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpKvCacheRatio, lang));
     });
 
     // KV 缓存空间计算按钮
@@ -102,6 +108,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.temperature));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTemperature, lang));
     });
 
     // top_p
@@ -111,12 +118,14 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.top_p));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTopP, lang));
     });
 
     // top_k
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelTopK, lang));
         ui.add(egui::DragValue::new(&mut settings.top_k).range(0..=1000));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTopK, lang));
     });
 
     // 重复惩罚
@@ -126,6 +135,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.repeat_penalty));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpRepeatPenalty, lang));
     });
 
     // 存在惩罚
@@ -135,6 +145,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.presence_penalty));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpPresencePenalty, lang));
     });
 
     // Flash Attention（国际化选项）
@@ -155,6 +166,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
             }
         });
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpFlashAttn, lang));
     });
 
     ui.add_space(12.0);
@@ -168,6 +180,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             i18n::t(i18n::Key::CheckboxKvOffload, lang),
         );
         ui.small(i18n::t(i18n::Key::HintKvOffload, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpKvOffload, lang));
     });
 
     // K 缓存类型
@@ -185,6 +198,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
             }
         });
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpCacheTypeK, lang));
     });
 
     // V 缓存类型
@@ -202,6 +216,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
             }
         });
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpCacheTypeV, lang));
     });
 
     // 锁定内存
@@ -246,6 +261,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         {
             settings.gpu_layers_mode = GpuLayersMode::Manual(gpu_layers);
         }
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpGpuDevice, lang));
     });
 
     // 设备列表
@@ -269,6 +285,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             }
         });
         ui.small(i18n::t(i18n::Key::HintSplitMode, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSplitMode, lang));
     });
 
     // 张量拆分比例
@@ -276,6 +293,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ui.label(i18n::t(i18n::Key::LabelTensorSplit, lang));
         ui.text_edit_singleline(&mut settings.tensor_split);
         ui.small(i18n::t(i18n::Key::HintTensorSplit, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTensorSplit, lang));
     });
 
     // CPU MoE（与 RPC 模式一致的缩进样式）
@@ -285,6 +303,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             i18n::t(i18n::Key::CheckboxCpuMoe, lang),
         );
         ui.small(i18n::t(i18n::Key::HintCpuMoe, lang));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpCpuMoe, lang));
     });
     if settings.cpu_moe {
         ui.indent("cpu_moe_options", |ui| {
@@ -327,18 +346,21 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
                 }
             }
         });
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSpecType, lang));
     });
 
     // 最大推测数量 --spec-draft-n-max（DragValue）
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::SpecDraftNMaxLabel, lang));
         ui.add(egui::DragValue::new(&mut settings.spec_draft_n_max).range(0..=64));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSpecDraftNMax, lang));
     });
 
     // 最小推测数量 --spec-draft-n-min（DragValue）
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::SpecDraftNMinLabel, lang));
         ui.add(egui::DragValue::new(&mut settings.spec_draft_n_min).range(0..=32));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSpecDraftNMin, lang));
     });
 
     // 信任度 --spec-draft-p-min（Slider）
@@ -348,6 +370,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.spec_draft_p_min));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSpecDraftPMin, lang));
     });
 
     // 分裂概率 --spec-draft-p-split（Slider）
@@ -357,5 +380,6 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
             .smallest_positive(0.01)
             .custom_formatter(|v, _| format!("{:.2}", v)));
         ui.label(format!("{:.2}", settings.spec_draft_p_split));
+        helper::help_button_inline(ui, i18n::t(i18n::Key::HelpSpecDraftPSplit, lang));
     });
 }
