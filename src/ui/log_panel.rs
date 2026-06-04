@@ -6,6 +6,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
     ui.heading(i18n::t(i18n::Key::PanelLogTitle, lang));
     ui.separator();
 
+    // 记录勾选前的状态，用于检测 false -> true 变化
+    let auto_scroll_before = settings.auto_scroll_logs;
+
     ui.horizontal(|ui| {
         if ui.small_button(i18n::t(i18n::Key::BtnClearLogs, lang)).clicked() {
             server.clear_logs();
@@ -16,6 +19,9 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
         ui.add(egui::DragValue::new(&mut settings.max_log_lines).range(-1..=10000));
         ui.small(i18n::t(i18n::Key::HintLogSession, lang));
     });
+
+    // 检测从 false -> true 的变化，触发立即滚动到底部
+    let should_scroll_to_bottom = !auto_scroll_before && settings.auto_scroll_logs;
 
     ui.add_space(4.0);
 
@@ -38,6 +44,11 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, server: &mut ServerMana
             .id_salt("log_scroll_area")
             .stick_to_bottom(settings.auto_scroll_logs)
             .show(ui, |ui| {
+                // 当用户重新勾选自动滚动时，立即滚动到底部
+                if should_scroll_to_bottom {
+                    ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
+                }
+
                 let mut logs = server.logs();
                 // -1 表示全部保留；>0 时截断到最后 N 行
                 if settings.max_log_lines > 0 && logs.len() > settings.max_log_lines as usize {
