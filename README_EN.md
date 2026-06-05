@@ -22,6 +22,7 @@ A lightweight llama.cpp launcher built with Rust, providing a graphical interfac
 - 🔧 GPU layers management (Auto/All/Manual modes)
 - 📱 RPC mode support (distributed inference)
 - 🎯 Web UI integration
+- 📊 Auto-calculate maximum VRAM available context
 - 🔍 Colorful model file tag parsing (auto-identifies parameter count, quantization type, etc.)
 - 📋 Launch command preview (read-only view of the final command)
 
