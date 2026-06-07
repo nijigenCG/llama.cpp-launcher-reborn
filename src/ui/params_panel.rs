@@ -33,7 +33,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         }
     }
 
-    // 最大批次大小 (--batch-size) (k)
+    // 批次大小 (--batch-size) (k)
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelBatchSize, lang));
         ui.add(
@@ -46,7 +46,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpBatchSize, lang));
     });
 
-    // 最大物理批次大小 (--ubatch-size) (k)
+    // 物理批次大小 (--ubatch-size) (k)
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelUBatchSize, lang));
         ui.add(
