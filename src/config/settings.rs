@@ -267,7 +267,6 @@ pub struct Preset {
     #[serde(default = "default_kv_cache_ratio")]
     pub kv_cache_ratio: f32, // KV 缓存比例 (不拼接启动命令)
     // GPU 与设备分配
-    pub gpu_device: String,
     pub gpu_layers_mode: GpuLayersMode,
     pub split_mode: String,
     pub tensor_split: String,
@@ -326,7 +325,6 @@ impl Default for Preset {
             kv_unified: false,
             swa_full: false,
             kv_cache_ratio: default_kv_cache_ratio(),
-            gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::Auto,
             split_mode: "none".to_string(),
             tensor_split: "".to_string(),
@@ -377,7 +375,6 @@ impl Preset {
             kv_unified: settings.kv_unified,
             swa_full: settings.swa_full,
             kv_cache_ratio: settings.kv_cache_ratio,
-            gpu_device: settings.gpu_device.clone(),
             gpu_layers_mode: settings.gpu_layers_mode,
             split_mode: settings.split_mode.clone(),
             tensor_split: settings.tensor_split.clone(),
@@ -425,7 +422,6 @@ impl Preset {
         settings.kv_unified = self.kv_unified;
         settings.swa_full = self.swa_full;
         settings.kv_cache_ratio = self.kv_cache_ratio;
-        settings.gpu_device = self.gpu_device;
         settings.gpu_layers_mode = self.gpu_layers_mode;
         settings.split_mode = self.split_mode;
         settings.tensor_split = self.tensor_split;
@@ -516,7 +512,6 @@ pub struct AppSettings {
     pub kv_cache_ratio: f32, // KV 缓存比例 (不拼接启动命令)
 
     // GPU 与设备分配
-    pub gpu_device: String,
     pub gpu_layers_mode: GpuLayersMode,
     pub split_mode: String,
     pub tensor_split: String,
@@ -629,7 +624,6 @@ impl Default for AppSettings {
             kv_unified: false,
             swa_full: false,
             kv_cache_ratio: default_kv_cache_ratio(),
-            gpu_device: "".to_string(),
             gpu_layers_mode: GpuLayersMode::Auto,
             split_mode: "none".to_string(),
             tensor_split: "".to_string(),
