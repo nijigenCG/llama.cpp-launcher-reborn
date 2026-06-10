@@ -15,6 +15,15 @@ pub fn ui(
     // 二进制路径
     ui.horizontal(|ui| {
         ui.label(i18n::t(i18n::Key::LabelServerPath, lang));
+        let mut server_path_str = settings.server_path.to_string_lossy().to_string();
+        let response = ui.text_edit_singleline(&mut server_path_str);
+        if response.changed() {
+            settings.server_path = std::path::PathBuf::from(&server_path_str);
+        }
+    });
+
+    // 按钮行
+    ui.horizontal(|ui| {
         if ui.button(i18n::t(i18n::Key::BtnBrowse, lang)).clicked() {
             if let Some(path) = rfd::FileDialog::new()
                 .set_title(i18n::t(i18n::Key::DialogSelectServer, lang))
@@ -32,7 +41,7 @@ pub fn ui(
             }
         }
 
-        // 查看 llama.cpp 版本按钮（与自动检测同排）
+        // 查看 llama.cpp 版本按钮
         let server_path_valid = settings
             .server_path
             .file_name()
@@ -82,11 +91,6 @@ pub fn ui(
             }
         }
     });
-    let mut server_path_str = settings.server_path.to_string_lossy().to_string();
-    let response = ui.text_edit_singleline(&mut server_path_str);
-    if response.changed() {
-        settings.server_path = std::path::PathBuf::from(&server_path_str);
-    }
 
     // 监听地址
     ui.horizontal(|ui| {
