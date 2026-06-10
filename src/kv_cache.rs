@@ -124,19 +124,15 @@ pub fn get_free_gpu_mib(server_path: &Path) -> Result<u64, String> {
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    // 正则匹配 "N MiB free" 模式，提取数字
-    // 示例输出: (24560 MiB, 24410 MiB free) GPU0
-    for line in stdout.lines() {
-        if let Some(m) = regex_search_free_mib(line) {
-            return Ok(m);
-        }
+    // 解析 stdout 中的所有 "N MiB free" 模式，并求和
+    // 示例输出: (24560 MiB, 24410 MiB free) GPU0 (24560 MiB, 24410 MiB free) GPU1
+    if let Some(total) = sum_all_free_mib(&stdout) {
+        return Ok(total);
     }
 
     // 尝试从 stderr 中查找（某些版本可能输出到 stderr）
-    for line in stderr.lines() {
-        if let Some(m) = regex_search_free_mib(line) {
-            return Ok(m);
-        }
+    if let Some(total) = sum_all_free_mib(&stderr) {
+        return Ok(total);
     }
 
     Err(format!(
@@ -145,36 +141,56 @@ pub fn get_free_gpu_mib(server_path: &Path) -> Result<u64, String> {
     ))
 }
 
-/// 在行中搜索 "N MiB free" 模式，返回 N（MiB）
-fn regex_search_free_mib(line: &str) -> Option<u64> {
-    // 手动匹配 "{number} MiB free" 子串
+/// 从一行中提取所有 "N MiB free" 模式对应的数字（MiB）
+fn extract_all_free_mib_from_line(line: &str) -> Vec<u64> {
+    let mut results = Vec::new();
     let lower = line.to_lowercase();
-    if !lower.contains("mib free") && !lower.contains(" mib free") {
-        return None;
+    let mut search_start = 0;
+
+    // 循环查找所有 "mib free" 出现的位置
+    while let Some(pos) = lower[search_start..].find("mib free") {
+        let absolute_pos = search_start + pos;
+        // 从 "mib" 之前开始向前查找数字
+        let prefix = &line[..absolute_pos];
+        let trimmed = prefix.trim_end();
+
+        if let Some(last_space) = trimmed.rfind(' ') {
+            let num_str = &trimmed[last_space + 1..];
+            if let Ok(n) = num_str.parse::<u64>() {
+                results.push(n);
+            }
+        } else if !trimmed.is_empty() {
+            // 没有前导空格，尝试解析整行（不太可能）
+            if let Ok(n) = trimmed.parse::<u64>() {
+                results.push(n);
+            }
+        }
+
+        // 移动搜索起点，避免重复匹配
+        search_start = absolute_pos + "mib free".len();
     }
 
-    // 找到 "MiB free" 位置，向前读取数字
-    for (i, c) in lower.char_indices() {
-        if c == 'm' && lower[i..].starts_with("mib free") {
-            // 从 m 之前开始向前查找空格分隔的数字
-            let prefix = &line[..i];
-            // trim trailing whitespace and parse the last number
-            let trimmed = prefix.trim_end();
-            if let Some(last_space) = trimmed.rfind(' ') {
-                let num_str = &trimmed[last_space + 1..];
-                if let Ok(n) = num_str.parse::<u64>() {
-                    return Some(n);
-                }
-            } else {
-                // 没有前导空格，整行就是数字（不太可能）
-                if let Ok(n) = trimmed.parse::<u64>() {
-                    return Some(n);
-                }
-            }
+    results
+}
+
+/// 在文本中搜索所有 "N MiB free" 模式，返回所有 N 的总和（MiB）
+fn sum_all_free_mib(text: &str) -> Option<u64> {
+    let mut total = 0u64;
+    let mut found_any = false;
+
+    for line in text.lines() {
+        let values = extract_all_free_mib_from_line(line);
+        for v in values {
+            total = total.saturating_add(v);
+            found_any = true;
         }
     }
 
-    None
+    if found_any {
+        Some(total)
+    } else {
+        None
+    }
 }
 
 /// KV 缓存类型 → 精度字节数（f64 以支持量化类型的非整数字节）
@@ -312,4 +328,37 @@ pub fn calc_max_context_facade(settings: &AppSettings) -> Result<usize, String> 
     );
     log::info!("[calc_max_context_facade] 最大可用上下文: {}k", max_ctx_k);
     Ok(max_ctx_k as usize)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_single_gpu() {
+        let line = "  ROCm0: Radeon RX 7900 XTX (24560 MiB, 24524 MiB free)";
+        let values = extract_all_free_mib_from_line(line);
+        assert_eq!(values, vec![24524]);
+    }
+
+    #[test]
+    fn test_extract_multiple_gpus_same_line() {
+        let line = "(24560 MiB, 24410 MiB free) GPU0 (24560 MiB, 24410 MiB free) GPU1";
+        let values = extract_all_free_mib_from_line(line);
+        assert_eq!(values, vec![24410, 24410]);
+    }
+
+    #[test]
+    fn test_sum_all_free_mib() {
+        let text = "Available devices:\n  ROCm0: Radeon RX 7900 XTX (24560 MiB, 24524 MiB free)\n  ROCm1: Radeon RX 7900 XTX (24560 MiB, 24524 MiB free)";
+        let total = sum_all_free_mib(text);
+        assert_eq!(total, Some(49048));
+    }
+
+    #[test]
+    fn test_sum_all_free_mib_no_match() {
+        let text = "No GPU devices found";
+        let total = sum_all_free_mib(text);
+        assert_eq!(total, None);
+    }
 }
