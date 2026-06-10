@@ -308,7 +308,7 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
     let mut manual_gpu_layers = matches!(settings.gpu_layers_mode, GpuLayersMode::Manual(_));
     let mut gpu_layers = match settings.gpu_layers_mode {
         GpuLayersMode::Auto => 0usize,
-        GpuLayersMode::All => 999usize,
+        GpuLayersMode::All => 256usize,
         GpuLayersMode::Manual(n) => n,
     };
 

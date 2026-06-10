@@ -74,7 +74,7 @@ impl GpuLayersMode {
     pub fn to_arg(&self) -> String {
         match self {
             GpuLayersMode::Auto => "auto".to_string(),
-            GpuLayersMode::All => "999".to_string(),
+            GpuLayersMode::All => "256".to_string(),
             GpuLayersMode::Manual(n) => n.to_string(),
         }
     }
