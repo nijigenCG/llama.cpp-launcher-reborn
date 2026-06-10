@@ -128,6 +128,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         );
         ui.label(format!("{:.2}", settings.temperature));
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTemperature, lang));
+        ui.checkbox(
+            &mut settings.ignore_temperature,
+            i18n::t(i18n::Key::CheckboxIgnoreTemperature, lang),
+        );
     });
 
     // top_p
@@ -140,6 +144,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         );
         ui.label(format!("{:.2}", settings.top_p));
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTopP, lang));
+        ui.checkbox(
+            &mut settings.ignore_top_p,
+            i18n::t(i18n::Key::CheckboxIgnoreTopP, lang),
+        );
     });
 
     // top_k
@@ -147,6 +155,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         ui.label(i18n::t(i18n::Key::LabelTopK, lang));
         ui.add(egui::DragValue::new(&mut settings.top_k).range(0..=1000));
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpTopK, lang));
+        ui.checkbox(
+            &mut settings.ignore_top_k,
+            i18n::t(i18n::Key::CheckboxIgnoreTopK, lang),
+        );
     });
 
     // 重复惩罚
@@ -159,6 +171,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         );
         ui.label(format!("{:.2}", settings.repeat_penalty));
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpRepeatPenalty, lang));
+        ui.checkbox(
+            &mut settings.ignore_repeat_penalty,
+            i18n::t(i18n::Key::CheckboxIgnoreRepeatPenalty, lang),
+        );
     });
 
     // 存在惩罚
@@ -171,6 +187,10 @@ pub fn ui(ui: &mut egui::Ui, settings: &mut AppSettings, lang: &i18n::Language) 
         );
         ui.label(format!("{:.2}", settings.presence_penalty));
         helper::help_button_inline(ui, i18n::t(i18n::Key::HelpPresencePenalty, lang));
+        ui.checkbox(
+            &mut settings.ignore_presence_penalty,
+            i18n::t(i18n::Key::CheckboxIgnorePresencePenalty, lang),
+        );
     });
 
     // Flash Attention（国际化选项）

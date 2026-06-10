@@ -229,6 +229,17 @@ pub struct Preset {
     pub top_k: i32,
     pub repeat_penalty: f32,
     pub presence_penalty: f32,
+    // 忽略采样参数标志（勾选时不拼接启动命令）
+    #[serde(default)]
+    pub ignore_temperature: bool,
+    #[serde(default)]
+    pub ignore_top_p: bool,
+    #[serde(default)]
+    pub ignore_top_k: bool,
+    #[serde(default)]
+    pub ignore_repeat_penalty: bool,
+    #[serde(default)]
+    pub ignore_presence_penalty: bool,
     #[serde(default = "default_flash_attn")]
     pub flash_attn: String,
 
@@ -296,6 +307,11 @@ impl Default for Preset {
             top_k: 40,
             repeat_penalty: 1.1,
             presence_penalty: 0.0,
+            ignore_temperature: true,
+            ignore_top_p: true,
+            ignore_top_k: true,
+            ignore_repeat_penalty: true,
+            ignore_presence_penalty: true,
             flash_attn: default_flash_attn(),
             spec_type: default_spec_type(),
             spec_draft_n_max: default_spec_draft_n_max(),
@@ -342,6 +358,11 @@ impl Preset {
             top_k: settings.top_k,
             repeat_penalty: settings.repeat_penalty,
             presence_penalty: settings.presence_penalty,
+            ignore_temperature: settings.ignore_temperature,
+            ignore_top_p: settings.ignore_top_p,
+            ignore_top_k: settings.ignore_top_k,
+            ignore_repeat_penalty: settings.ignore_repeat_penalty,
+            ignore_presence_penalty: settings.ignore_presence_penalty,
             flash_attn: settings.flash_attn.clone(),
             spec_type: settings.spec_type.clone(),
             spec_draft_n_max: settings.spec_draft_n_max,
@@ -384,6 +405,11 @@ impl Preset {
         settings.top_k = self.top_k;
         settings.repeat_penalty = self.repeat_penalty;
         settings.presence_penalty = self.presence_penalty;
+        settings.ignore_temperature = self.ignore_temperature;
+        settings.ignore_top_p = self.ignore_top_p;
+        settings.ignore_top_k = self.ignore_top_k;
+        settings.ignore_repeat_penalty = self.ignore_repeat_penalty;
+        settings.ignore_presence_penalty = self.ignore_presence_penalty;
         settings.flash_attn = self.flash_attn;
         // 推测解码（Speculative Decoding）配置
         settings.spec_type = self.spec_type;
@@ -451,6 +477,17 @@ pub struct AppSettings {
     pub top_k: i32,
     pub repeat_penalty: f32,
     pub presence_penalty: f32,
+    // 忽略采样参数标志（勾选时不拼接启动命令）
+    #[serde(default)]
+    pub ignore_temperature: bool,
+    #[serde(default)]
+    pub ignore_top_p: bool,
+    #[serde(default)]
+    pub ignore_top_k: bool,
+    #[serde(default)]
+    pub ignore_repeat_penalty: bool,
+    #[serde(default)]
+    pub ignore_presence_penalty: bool,
     #[serde(default = "default_flash_attn")]
     pub flash_attn: String,
 
@@ -573,6 +610,11 @@ impl Default for AppSettings {
             top_k: 40,
             repeat_penalty: 1.1,
             presence_penalty: 0.0,
+            ignore_temperature: true,
+            ignore_top_p: true,
+            ignore_top_k: true,
+            ignore_repeat_penalty: true,
+            ignore_presence_penalty: true,
             flash_attn: default_flash_attn(),
             spec_type: default_spec_type(),
             spec_draft_n_max: default_spec_draft_n_max(),
