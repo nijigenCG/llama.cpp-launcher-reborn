@@ -40,8 +40,11 @@ pub fn create_desktop_shortcut() -> Result<(), String> {
     #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 
-    // 1. 获取 exe 路径
+    // 1. 获取 exe 路径和所在目录
     let exe_path = std::env::current_exe().map_err(|e| format!("获取 exe 路径失败：{}", e))?;
+    let exe_dir = exe_path
+        .parent()
+        .ok_or_else(|| "无法获取 exe 所在目录".to_string())?;
 
     // 2. 获取桌面路径
     let desktop_dir = dirs::desktop_dir().ok_or_else(|| "无法获取桌面路径".to_string())?;
@@ -50,24 +53,52 @@ pub fn create_desktop_shortcut() -> Result<(), String> {
     let name = get_shortcut_name();
     let shortcut_path: PathBuf = desktop_dir.join(format!("{}.desktop", name));
 
-    // 4. 创建 .desktop 文件内容
+    // 4. 复制图标到 exe 同级目录（如果不存在）
+    let icon_filename = "llama-cpp-launcher.png";
+    let icon_path = exe_dir.join(icon_filename);
+
+    if !icon_path.exists() {
+        // 尝试从多个可能的位置复制图标
+        let possible_sources = [
+            std::env::current_dir()
+                .unwrap_or_default()
+                .join(icon_filename),
+            std::env::current_dir()
+                .unwrap_or_default()
+                .join("assets")
+                .join(icon_filename),
+        ];
+
+        for src in &possible_sources {
+            if src.exists() {
+                fs::copy(src, &icon_path).map_err(|e| format!("复制图标文件失败：{}", e))?;
+                break;
+            }
+        }
+    }
+
+    // 5. 创建 .desktop 文件内容（使用绝对路径引用图标）
+    let icon_absolute = icon_path
+        .to_str()
+        .ok_or_else(|| "图标路径无效".to_string())?;
     let desktop_content = format!(
         r#"[Desktop Entry]
 Type=Application
 Name={}
 Exec={}
-Icon=llama-blue
+Icon={}
 Terminal=false
 "#,
         name,
-        exe_path.display()
+        exe_path.display(),
+        icon_absolute
     );
 
-    // 5. 写入文件
+    // 6. 写入文件
     fs::write(&shortcut_path, &desktop_content)
         .map_err(|e| format!("创建 .desktop 文件失败：{}", e))?;
 
-    // 6. 设置可执行权限（Linux .desktop 文件需要）
+    // 7. 设置可执行权限（Linux .desktop 文件需要）
     #[cfg(unix)]
     {
         let mut perms = fs::metadata(&shortcut_path)
