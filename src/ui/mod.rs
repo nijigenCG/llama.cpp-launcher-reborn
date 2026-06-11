@@ -6,3 +6,4 @@ pub mod params_panel;
 pub mod presets_panel;
 pub mod rpc_panel;
 pub mod server_panel;
+pub mod theme;

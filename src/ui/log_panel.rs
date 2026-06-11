@@ -1,6 +1,7 @@
 use crate::config::settings::AppSettings;
 use crate::engine::server::{LogLevel, ServerManager};
 use crate::i18n;
+use crate::ui::theme;
 
 pub fn ui(
     ui: &mut egui::Ui,
@@ -8,100 +9,90 @@ pub fn ui(
     server: &mut ServerManager,
     lang: &i18n::Language,
 ) {
-    ui.heading(i18n::t(i18n::Key::PanelLogTitle, lang));
-    ui.separator();
+    theme::page_frame().show(ui, |ui| {
+        theme::page_title(ui, i18n::t(i18n::Key::PanelLogTitle, lang));
 
-    // 记录勾选前的状态，用于检测 false -> true 变化
-    let auto_scroll_before = settings.auto_scroll_logs;
+        let auto_scroll_before = settings.auto_scroll_logs;
 
-    ui.horizontal(|ui| {
-        if ui
-            .small_button(i18n::t(i18n::Key::BtnClearLogs, lang))
-            .clicked()
-        {
-            server.clear_logs();
-        }
-        ui.checkbox(
-            &mut settings.auto_scroll_logs,
-            i18n::t(i18n::Key::CheckboxAutoScroll, lang),
-        );
-        ui.add_space(8.0);
-        ui.label(i18n::t(i18n::Key::LabelMaxLogLines, lang));
-        ui.add(egui::DragValue::new(&mut settings.max_log_lines).range(-1..=10000));
-        ui.small(i18n::t(i18n::Key::HintLogSession, lang));
-    });
-
-    // 检测从 false -> true 的变化，触发立即滚动到底部
-    let should_scroll_to_bottom = !auto_scroll_before && settings.auto_scroll_logs;
-
-    ui.add_space(4.0);
-
-    // 预填充进度条（0-100%），仅在进度 > 0 时显示
-    let progress = server.progress();
-    if progress > 0.0 {
-        let pct = (progress * 100.0).round() as u32;
-        let label = format!(
-            "{}: {}/100%",
-            i18n::t(i18n::Key::LabelPreFillProgress, lang),
-            pct
-        );
-        ui.add(egui::ProgressBar::new(progress).text(&label));
-        ui.add_space(4.0);
-    }
-
-    // max_log_lines == 0 时不显示日志区域
-    if settings.max_log_lines != 0 {
-        egui::ScrollArea::vertical()
-            .auto_shrink(false)
-            .id_salt("log_scroll_area")
-            .stick_to_bottom(settings.auto_scroll_logs)
-            .show(ui, |ui| {
-                // 当用户重新勾选自动滚动时，立即滚动到底部
-                if should_scroll_to_bottom {
-                    ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
+        theme::section_card(ui, i18n::t(i18n::Key::PanelLogTitle, lang), |ui| {
+            ui.horizontal_wrapped(|ui| {
+                if ui
+                    .add(theme::subtle_button(i18n::t(i18n::Key::BtnClearLogs, lang)))
+                    .clicked()
+                {
+                    server.clear_logs();
                 }
-
-                let mut logs = server.logs();
-                // -1 表示全部保留；>0 时截断到最后 N 行
-                if settings.max_log_lines > 0 && logs.len() > settings.max_log_lines as usize {
-                    let start_index = logs.len() - settings.max_log_lines as usize;
-                    logs.drain(..start_index);
-                }
-
-                if logs.is_empty() {
-                    ui.add_space(8.0);
-                    ui.horizontal_centered(|ui| {
-                        ui.colored_label(egui::Color32::GRAY, i18n::t(i18n::Key::HintNoLogs, lang));
-                    });
-                } else {
-                    for entry in &logs {
-                        let prefix = match entry.level {
-                            LogLevel::Info => "",
-                            LogLevel::Warn => "⚠ ",
-                            LogLevel::Error => "✖ ",
-                        };
-
-                        let text = format!("{}{}", prefix, entry.text);
-
-                        ui.horizontal_wrapped(|ui| match entry.level {
-                            LogLevel::Info => {
-                                ui.colored_label(egui::Color32::BLACK, &text);
-                            }
-                            LogLevel::Warn => {
-                                egui::Frame::default()
-                                    .fill(egui::Color32::from_rgb(80, 80, 80))
-                                    .inner_margin(egui::Margin::same(4))
-                                    .corner_radius(8.0)
-                                    .show(ui, |ui| {
-                                        ui.colored_label(egui::Color32::YELLOW, &text);
-                                    });
-                            }
-                            LogLevel::Error => {
-                                ui.colored_label(egui::Color32::RED, &text);
-                            }
-                        });
-                    }
-                }
+                ui.checkbox(
+                    &mut settings.auto_scroll_logs,
+                    i18n::t(i18n::Key::CheckboxAutoScroll, lang),
+                );
+                ui.label(i18n::t(i18n::Key::LabelMaxLogLines, lang));
+                ui.add(egui::DragValue::new(&mut settings.max_log_lines).range(-1..=10000));
             });
-    }
+            ui.small(
+                egui::RichText::new(i18n::t(i18n::Key::HintLogSession, lang))
+                    .color(theme::TEXT_MUTED),
+            );
+
+            let progress = server.progress();
+            if progress > 0.0 {
+                ui.add_space(10.0);
+                let pct = (progress * 100.0).round() as u32;
+                let label = format!(
+                    "{}: {}/100%",
+                    i18n::t(i18n::Key::LabelPreFillProgress, lang),
+                    pct
+                );
+                ui.add(egui::ProgressBar::new(progress).text(label));
+            }
+        });
+
+        ui.add_space(12.0);
+
+        if settings.max_log_lines == 0 {
+            return;
+        }
+
+        let should_scroll_to_bottom = !auto_scroll_before && settings.auto_scroll_logs;
+        let limit = if settings.max_log_lines > 0 {
+            Some(settings.max_log_lines as usize)
+        } else {
+            None
+        };
+        let logs = server.logs_tail(limit);
+
+        theme::section_card(ui, i18n::t(i18n::Key::PanelLogTitle, lang), |ui| {
+            theme::code_frame().show(ui, |ui| {
+                egui::ScrollArea::vertical()
+                    .id_salt("log_scroll_area")
+                    .stick_to_bottom(settings.auto_scroll_logs)
+                    .show(ui, |ui| {
+                        if should_scroll_to_bottom {
+                            ui.scroll_to_cursor(Some(egui::Align::BOTTOM));
+                        }
+
+                        if logs.is_empty() {
+                            ui.add_space(6.0);
+                            ui.colored_label(
+                                theme::TEXT_MUTED,
+                                i18n::t(i18n::Key::HintNoLogs, lang),
+                            );
+                            return;
+                        }
+
+                        for entry in &logs {
+                            let color = match entry.level {
+                                LogLevel::Info => Color32::from_rgb(233, 236, 242),
+                                LogLevel::Warn => Color32::from_rgb(255, 215, 125),
+                                LogLevel::Error => Color32::from_rgb(255, 154, 145),
+                            };
+
+                            ui.label(egui::RichText::new(&entry.text).monospace().color(color));
+                        }
+                    });
+            });
+        });
+    });
 }
+
+use egui::Color32;

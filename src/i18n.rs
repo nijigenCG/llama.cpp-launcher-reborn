@@ -40,6 +40,8 @@ pub enum Key {
     BtnAutoDetect,
     BtnClearLogs,
     BtnClose,
+    BtnConfirm,
+    BtnCancel,
     BtnHostLocal,
     BtnHostAny,
     // 预设
@@ -189,6 +191,8 @@ pub enum Key {
     ErrRpcFileNotFound,
     ErrStartFailed,
     ErrPortConflict,
+    TextUnknownVersion,
+    TextFetchFailed,
 
     // 关于
     AboutTitle,
@@ -297,6 +301,10 @@ impl Key {
             (Key::BtnClearLogs, &Language::En) => "Clear Logs",
             (Key::BtnClose, &Language::Zh) => "关闭",
             (Key::BtnClose, &Language::En) => "Close",
+            (Key::BtnConfirm, &Language::Zh) => "确认",
+            (Key::BtnConfirm, &Language::En) => "Confirm",
+            (Key::BtnCancel, &Language::Zh) => "取消",
+            (Key::BtnCancel, &Language::En) => "Cancel",
             (Key::BtnHostLocal, &Language::Zh) => "本机",
             (Key::BtnHostLocal, &Language::En) => "Local",
             (Key::BtnHostAny, &Language::Zh) => "任意网络",
@@ -584,6 +592,10 @@ impl Key {
             (Key::ErrStartFailed, &Language::En) => "Start failed",
             (Key::ErrPortConflict, &Language::Zh) => "Server 端口和 RPC 端口不能相同",
             (Key::ErrPortConflict, &Language::En) => "Server port and RPC port cannot be the same",
+            (Key::TextUnknownVersion, &Language::Zh) => "未知版本",
+            (Key::TextUnknownVersion, &Language::En) => "Unknown version",
+            (Key::TextFetchFailed, &Language::Zh) => "获取失败",
+            (Key::TextFetchFailed, &Language::En) => "Fetch failed",
 
             // 关于
             (Key::AboutTitle, &Language::Zh) => "关于",

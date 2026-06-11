@@ -1,43 +1,61 @@
 use crate::engine::rpc::RpcManager;
 use crate::engine::server::ServerManager;
 use crate::i18n;
+use crate::ui::theme;
 
 pub fn ui(ui: &mut egui::Ui, server: &ServerManager, rpc: &RpcManager, lang: &i18n::Language) {
-    ui.heading(i18n::t(i18n::Key::SectionLaunchCommands, lang));
-    ui.separator();
+    theme::page_frame().show(ui, |ui| {
+        theme::page_title(ui, i18n::t(i18n::Key::SectionLaunchCommands, lang));
 
-    // Server 启动命令
-    ui.label(i18n::t(i18n::Key::LabelServerCommand, lang));
-    if let Some(ref cmd) = server.launch_command() {
-        // 使用水平滚动区域，避免过长命令被截断
-        egui::ScrollArea::horizontal().show(ui, |ui| {
-            ui.monospace(cmd);
-        });
-        if ui
-            .button(i18n::t(i18n::Key::BtnCopyToClipboard, lang))
-            .clicked()
-        {
-            ui.ctx().copy_text(cmd.to_string());
-        }
-    } else {
-        ui.colored_label(egui::Color32::GRAY, i18n::t(i18n::Key::HintNoCommand, lang));
-    }
-    ui.separator();
+        render_command_card(
+            ui,
+            i18n::t(i18n::Key::LabelServerCommand, lang),
+            server.launch_command(),
+            lang,
+        );
 
-    // RPC 启动命令
-    ui.label(i18n::t(i18n::Key::LabelRpcCommand, lang));
-    if let Some(ref cmd) = rpc.launch_command() {
-        // 使用水平滚动区域，避免过长命令被截断
-        egui::ScrollArea::horizontal().show(ui, |ui| {
-            ui.monospace(cmd);
-        });
-        if ui
-            .button(i18n::t(i18n::Key::BtnCopyToClipboard, lang))
-            .clicked()
-        {
-            ui.ctx().copy_text(cmd.to_string());
+        ui.add_space(12.0);
+
+        render_command_card(
+            ui,
+            i18n::t(i18n::Key::LabelRpcCommand, lang),
+            rpc.launch_command(),
+            lang,
+        );
+    });
+}
+
+fn render_command_card(
+    ui: &mut egui::Ui,
+    title: &str,
+    command: Option<String>,
+    lang: &i18n::Language,
+) {
+    theme::section_card(ui, title, |ui| {
+        if let Some(command) = command {
+            ui.horizontal_wrapped(|ui| {
+                if ui
+                    .add(theme::subtle_button(i18n::t(
+                        i18n::Key::BtnCopyToClipboard,
+                        lang,
+                    )))
+                    .clicked()
+                {
+                    ui.ctx().copy_text(command.clone());
+                }
+            });
+            ui.add_space(8.0);
+            theme::code_frame().show(ui, |ui| {
+                egui::ScrollArea::horizontal().show(ui, |ui| {
+                    ui.label(
+                        egui::RichText::new(command)
+                            .monospace()
+                            .color(egui::Color32::from_rgb(235, 237, 242)),
+                    );
+                });
+            });
+        } else {
+            ui.colored_label(theme::TEXT_MUTED, i18n::t(i18n::Key::HintNoCommand, lang));
         }
-    } else {
-        ui.colored_label(egui::Color32::GRAY, i18n::t(i18n::Key::HintNoCommand, lang));
-    }
+    });
 }
