@@ -39,6 +39,12 @@ pub struct RpcManager {
     _threads: Vec<thread::JoinHandle<()>>,
 }
 
+impl Default for RpcManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RpcManager {
     pub fn new() -> Self {
         Self {
@@ -179,6 +185,28 @@ impl RpcManager {
                 });
 
                 self._threads.push(stdout_thread);
+
+                let inner_clone = Arc::clone(&self.inner);
+                let stderr_thread = thread::spawn(move || {
+                    let stderr = {
+                        let mut inner = inner_clone.lock().unwrap();
+                        if let Some(ref mut child) = inner.child {
+                            child.stderr.take()
+                        } else {
+                            None
+                        }
+                    };
+                    if let Some(stderr) = stderr {
+                        let reader = BufReader::new(stderr);
+                        for line in reader.lines() {
+                            if line.is_err() {
+                                break;
+                            }
+                        }
+                    }
+                });
+
+                self._threads.push(stderr_thread);
             }
             Err(e) => {
                 self.state = RpcState::Error(format!(
@@ -218,9 +246,10 @@ impl RpcManager {
                         i18n::t(i18n::Key::StatusRpcCrashed, &i18n::Language::En),
                         status.code()
                     ));
-                    self.launch_command = None;
                 }
                 self.connection = RpcConnection::Disconnected;
+                self.launch_command = None;
+                inner.child = None;
             }
         }
         drop(inner);

@@ -676,6 +676,12 @@ pub struct SettingsManager {
     config_dir: PathBuf,
 }
 
+impl Default for SettingsManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SettingsManager {
     pub fn new() -> Self {
         let config_dir = std::env::current_exe()

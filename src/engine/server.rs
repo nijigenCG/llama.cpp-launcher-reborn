@@ -46,6 +46,12 @@ pub struct ServerManager {
     _threads: Vec<thread::JoinHandle<()>>,
 }
 
+impl Default for ServerManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ServerManager {
     pub fn new() -> Self {
         Self {
@@ -86,6 +92,14 @@ impl ServerManager {
         inner.logs.iter().cloned().collect()
     }
 
+    pub fn logs_tail(&self, limit: Option<usize>) -> Vec<LogEntry> {
+        let inner = self.inner.lock().unwrap();
+        let skip = limit
+            .map(|limit| inner.logs.len().saturating_sub(limit))
+            .unwrap_or(0);
+        inner.logs.iter().skip(skip).cloned().collect()
+    }
+
     // 判断 Server 是否已输出 "server is listening on"（表示真正就绪）
     pub fn is_listening(&self) -> bool {
         let inner = self.inner.lock().unwrap();
@@ -96,8 +110,9 @@ impl ServerManager {
     }
 
     pub fn clear_logs(&mut self) {
-        self.inner.lock().unwrap().logs.clear();
-        self.inner.lock().unwrap().progress = 0.0;
+        let mut inner = self.inner.lock().unwrap();
+        inner.logs.clear();
+        inner.progress = 0.0;
     }
 
     pub fn progress(&self) -> f32 {
@@ -119,9 +134,7 @@ impl ServerManager {
         }
 
         // 找到第一个空格，前面视为时间戳段
-        let Some(first_space) = line.find(' ') else {
-            return None;
-        };
+        let first_space = line.find(' ')?;
 
         let ts_part = &line[..first_space];
 
@@ -143,20 +156,14 @@ impl ServerManager {
         }
 
         match rest.as_bytes()[0] {
-            b'I' => {
-                if rest.len() == 1 || rest.as_bytes().get(1).map_or(false, |&b| b == b' ') {
-                    return Some(LogLevel::Info);
-                }
+            b'I' if rest.len() == 1 || rest.as_bytes().get(1).is_some_and(|&b| b == b' ') => {
+                return Some(LogLevel::Info);
             }
-            b'W' => {
-                if rest.len() == 1 || rest.as_bytes().get(1).map_or(false, |&b| b == b' ') {
-                    return Some(LogLevel::Warn);
-                }
+            b'W' if rest.len() == 1 || rest.as_bytes().get(1).is_some_and(|&b| b == b' ') => {
+                return Some(LogLevel::Warn);
             }
-            b'E' => {
-                if rest.len() == 1 || rest.as_bytes().get(1).map_or(false, |&b| b == b' ') {
-                    return Some(LogLevel::Error);
-                }
+            b'E' if rest.len() == 1 || rest.as_bytes().get(1).is_some_and(|&b| b == b' ') => {
+                return Some(LogLevel::Error);
             }
             _ => {}
         };
@@ -198,7 +205,7 @@ impl ServerManager {
     }
 
     pub fn start(&mut self, settings: &AppSettings) {
-        if self.is_running() {
+        if !matches!(self.state, ServerState::Idle | ServerState::Error(_)) {
             return;
         }
 
